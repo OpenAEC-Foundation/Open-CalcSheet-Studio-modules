@@ -1,0 +1,34 @@
+name: Controle
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  modules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # De rekenkern van de app, om elk blad door te rekenen.
+      - uses: actions/checkout@v5
+        with:
+          repository: OpenAEC-Foundation/Open-Structural-Calculation-Studio
+          path: app
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Rekenkern bouwen
+        working-directory: app
+        run: |
+          npm ci --workspace=@ifc-calc/core --include-workspace-root=false
+          npm --prefix packages/core run build
+
+      - name: Modules controleren
+        run: node scripts/controleer.mjs --app app

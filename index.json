@@ -1,0 +1,29 @@
+{
+  "formaat": 1,
+  "modules": [
+    {
+      "id": "balklaag",
+      "versie": "2026.44.0",
+      "naam": {
+        "nl": "Balklaag (houten vloerbalken)",
+        "en": "Timber joist floor"
+      },
+      "omschrijving": {
+        "nl": "Houten vloerbalk of onderslag: enkel veld, overstek, twee velden of raveel. Buiging, afschuiving, oplegdruk, kip, doorbuiging en trillingen, met parametrisch beeld.",
+        "en": "Timber floor joist or bearer: single span, cantilever, two spans or trimmer. Bending, shear, bearing, lateral torsional buckling, deflection and vibration, with a parametric view."
+      },
+      "categorie": "hout",
+      "status": "gereed",
+      "gepubliceerd": true,
+      "normen": [
+        "NEN-EN 1990 + NB",
+        "NEN-EN 1991-1-1 + NB",
+        "NEN-EN 1995-1-1 + NB"
+      ],
+      "map": "modules/balklaag",
+      "blad": "balklaag.cpd",
+      "beeld": "beeld.webp",
+      "minimaleAppVersie": "2026.44.0"
+    }
+  ]
+}
