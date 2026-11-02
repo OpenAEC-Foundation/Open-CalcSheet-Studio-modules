@@ -17,7 +17,7 @@ jobs:
       # De rekenkern van de app, om elk blad door te rekenen.
       - uses: actions/checkout@v5
         with:
-          repository: OpenAEC-Foundation/Open-Structural-Calculation-Studio
+          repository: OpenAEC-Foundation/Open-CalcSheet-Studio
           path: app
 
       - uses: actions/setup-node@v5

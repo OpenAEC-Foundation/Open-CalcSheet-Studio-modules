@@ -8,8 +8,7 @@ Names and descriptions are bilingual (Dutch and English).*
 1. **Fork** deze repository en maak een branch.
 2. **Maak een map** `modules/<id>/`. Het id bestaat uit kleine letters, cijfers
    en streepjes en is gelijk aan de mapnaam, bijvoorbeeld `kolom-staal`.
-3. **Schrijf het rekenblad** `<id>.cpd` in de app (Open Structural Calculation
-   Studio): maak het blad, controleer de uitwerking en de afdruk, en sla de
+3. **Schrijf het rekenblad** `<id>.cpd` in de app (Open CalcSheet Studio): maak het blad, controleer de uitwerking en de afdruk, en sla de
    tekst op. Houd de uitdraai beknopt — uitleg die alleen op het scherm hoort,
    krijgt de klasse `alleen-scherm`.
 4. **Vul `module.json` in** (zie [modules/balklaag/module.json](modules/balklaag/module.json)):
