@@ -1,10 +1,10 @@
-# Open Structural Calculation Studio — modules
+# Open CalcSheet Studio — modules
 
-Rekenmodules voor [Open Structural Calculation Studio](https://github.com/OpenAEC-Foundation/Open-Structural-Calculation-Studio):
+Rekenmodules voor [Open CalcSheet Studio](https://github.com/OpenAEC-Foundation/Open-CalcSheet-Studio):
 rekenbladen die je in de app als blad aan een project toevoegt. De app haalt de
 catalogus (`index.json`) op en installeert modules via het extensiebeheer.
 
-*Calculation modules for Open Structural Calculation Studio. Each module is a
+*Calculation modules for Open CalcSheet Studio. Each module is a
 calculation sheet you add to a project; the app reads `index.json` and installs
 modules through its extension manager. Contributions are welcome — see
 [CONTRIBUTING.md](CONTRIBUTING.md).*
