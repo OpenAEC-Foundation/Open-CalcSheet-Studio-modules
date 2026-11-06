@@ -1,0 +1,341 @@
+"Bedrijfsvloer op grondslag — puntlasten
+
+'<i>Een betonvloer op een verende ondergrond onder geconcentreerde lasten: een heftruckwiel, de oplegging van een haspel op de vloer en een stellingpoot. De momenten volgen uit de plaattheorie van Westergaard met de beddingsconstante k van de ondergrond, zoals CUR-Aanbeveling 36 die gebruikt. Daarna staan twee uitvoeringen naast elkaar: staalvezelbeton en een wapeningsnet.</i><span class="alleen-scherm"></span>
+# 1. Vloer en ondergrond
+
+h = ?{200}*(mm)', vloerdikte<span class="kolom-3"></span>'
+k = ?{0.05}*(N/mm^3)', beddingsconstante<span class="kolom-3"></span>'
+c_nom = ?{30}*(mm)', betondekking<span class="kolom-3"></span>'
+'<i>De beddingsconstante komt uit het grondonderzoek of een plaatbelastingproef, omgerekend zoals CUR-Aanbeveling 36 aangeeft. Ter oriëntatie: slappe klei 0,01 à 0,02, matig vast zand 0,03 à 0,05 en verdicht zand met een puinfundering 0,05 à 0,10 N/mm³. De momenten hangen weinig van k af: de straal l gaat met k<sup>−1/4</sup>, en in de formules staat l in een logaritme.</i><span class="alleen-scherm"></span>
+
+@select betonklasse "Betonsterkteklasse"
+  C30/37 = 30
+  C20/25 = 20
+  C25/30 = 25
+  C28/35 = 28
+  C35/45 = 35
+@end
+
+@select ligging "Waar de lasten kunnen staan"
+  Overal, ook bij vrije randen en hoeken = 1
+  Midden en langs randen, niet in hoeken = 2
+  Alleen midden in het veld = 3
+@end
+'<i>Een rand of hoek is een vrije rand van de vloer of een voeg zonder lastoverdracht. Bij een voeg met deuvels of een gezaagde voeg gaat een deel van de last naar het buurveld; geef dat deel op bij de belastingen (β<sub>v</sub>).</i><span class="alleen-scherm"></span>
+
+#hide
+'NEN-EN 1992-1-1 tabel 3.1 en 3.1.8 (3.23).
+f_ck = betonklasse*N/mm^2
+f_ctm = 0.30*(f_ck/MPa)^(2/3)*MPa to N/mm^2
+f_ctk = 0.7*f_ctm
+E_cm = 22000*((f_ck/MPa + 8)/10)^0.3*N/mm^2
+γ_c = 1.5
+f_ctd,fl = max(1.6 - h/(1000 mm); 1)*f_ctk/γ_c
+#show
+f_ck'<span class="kolom-4"></span>'
+f_ctk', 5%-onderwaarde<span class="kolom-4"></span>'
+E_cm'<span class="kolom-4"></span>'
+ν = 0.2'<span class="kolom-4"></span>'
+f_ctd,fl', buigtreksterkte, (3.23) met γ<sub>c</sub> = 1,5<span class="kolom-2"></span>'
+b_s = 1000 mm', strook van 1 m<span class="alleen-scherm">: momenten en wapening gelden per meter breedte</span><span class="kolom-2"></span>'
+l = (E_cm*h^3/(12*(1 - ν^2)*k))^0.25 to mm', straal van de relatieve stijfheid'
+M_cr = f_ctd,fl*b_s*h^2/6 to kN*m', scheurmoment ongewapend, per m'
+
+# 2. Belastingen
+
+#hide
+γ_Q = if(CC ≡ 1; 1.35; if(CC ≡ 3; 1.65; 1.5))
+'Welke posities meedoen: e_r voor de rand, e_h voor de hoek.
+e_r = bool(ligging ≤ 2)
+e_h = bool(ligging ≡ 1)
+#show
+γ_Q', NEN-EN 1990 NB, CC'CC'<span class="kolom-2"></span>'
+β_v = ?{0}', deel van de last dat bij een voeg overgaat<span class="kolom-2"></span>'
+
+'<h6>Heftruck</h6>
+F_as = ?{100}*(kN)', vooras met last<span class="kolom-3"></span>'
+s_w = ?{1000}*(mm)', wielen hart op hart<span class="kolom-3"></span>'
+φ_dyn = ?{1.4}', dynamische factor<span class="kolom-3"></span>'
+b_w = ?{200}*(mm)', contactvlak breed<span class="kolom-3"></span>'
+l_w = ?{250}*(mm)', contactvlak lang<span class="kolom-3"></span>'
+'<i>De vooras draagt bij het heffen ongeveer 90% van het eigen gewicht plus de last. De dynamische factor is 1,40 bij luchtbanden en 2,00 bij massieve banden (NEN-EN 1991-1-1, 6.3.2.3).</i><span class="alleen-scherm"></span>
+
+'<h6>Haspel op de vloer</h6>
+F_h = ?{22.5}*(kN)', per oplegging<span class="kolom-3"></span>'
+b_h = ?{40}*(mm)', contactvlak breed<span class="kolom-3"></span>'
+l_h = ?{100}*(mm)', contactvlak lang<span class="kolom-3"></span>'
+
+'<h6>Stelling</h6>
+F_p = ?{20}*(kN)', per poot<span class="kolom-3"></span>'
+b_p = ?{170}*(mm)', voetplaat breed<span class="kolom-3"></span>'
+l_p = ?{200}*(mm)', voetplaat lang<span class="kolom-3"></span>'
+s_p = ?{2750}*(mm)', poten hart op hart<span class="kolom-3"></span>'
+'<i>Draagt een staander twee vakken, of staan twee stellingen rug aan rug op één voetplaat, tel dan de lasten op die op die voetplaat komen.</i><span class="alleen-scherm"></span>
+
+#hide
+F_Ed,w = γ_Q*φ_dyn*F_as/2
+F_Ed,h = γ_Q*F_h
+F_Ed,p = γ_Q*F_p
+a_w = sqrt(b_w*l_w/π)
+a_h = sqrt(b_h*l_h/π)
+a_p = sqrt(b_p*l_p/π)
+#show
+'Rekenlast per wiel γ<sub>Q</sub>·φ<sub>dyn</sub>·F<sub>as</sub>/2, per oplegging en per poot γ<sub>Q</sub>·F; a is de straal van een cirkel met hetzelfde contactvlak.
+F_Ed,w', wiel<span class="kolom-3"></span>'
+F_Ed,h', haspel<span class="kolom-3"></span>'
+F_Ed,p', poot<span class="kolom-3"></span>'
+
+# 3. Momenten (elastisch)
+
+#hide
+'Spreiding van het wiel over de ondergrond: doorbuiging en gronddruk onder
+'een puntlast op een oneindige plaat op veren, w_max = F/(8·√(k·D)).
+D_pl = E_cm*h^3/(12*(1 - ν^2))
+w_max = F_Ed,w/(8*sqrt(k*D_pl)) to mm
+p_max = k*w_max to kN/m^2
+A_sp = 8*l^2 to m^2
+'Tekening: 220 px is 4,5·l. De vorm van de kom benadert −kei(r/l), de
+'functie van Kelvin uit de oplossing van Westergaard, op 2% van w_max.
+t_sc = 220/(4.5*l/(1 mm))
+t_l = l/(1 mm)*t_sc
+t_h = max(6; h/(1 mm)*t_sc)
+t_bw = max(4; b_w/(1 mm)*t_sc)
+t_w0 = 16
+t_p0 = 30
+t_yt = 64
+t_yg = t_yt + t_h + t_w0 + 34
+t_yp = t_yg + 20
+t_yd = t_yp + t_p0 + 22
+vorm(ξ) = exp(-1.018*abs(ξ))*(cos(0.612*abs(ξ)) + 1.663*sin(0.612*abs(ξ)))
+t_w(x) = t_w0*vorm((x - 240)/t_l)
+t_p(x) = t_p0*max(0; vorm((x - 240)/t_l))
+t_o(x) = t_yt + t_h + t_w(x)
+t_st(x) = (t_yg - t_o(x) - 8)/7
+#show
+'<svg viewbox="0 0 480 't_yd + 26'" xmlns="http://www.w3.org/2000/svg" style="font-size:11px; width:100%; max-height:'t_yd + 30'px;">
+'  <text x="20" y="14" style="fill:#64748b">Vloer op veren (Winkler), doorbuiging overdreven</text>
+'  <rect x="20" y="'t_yt'" width="440" height="'t_h'" style="fill:none; stroke:#94a3b8; stroke-width:0.8; stroke-dasharray:4 3"/>
+#for i = 0 : 21
+'  <polyline points="'30 + i*20','t_o(30 + i*20)' '30 + i*20','t_o(30 + i*20) + 4' '26 + i*20','t_o(30 + i*20) + 4 + 0.5*t_st(30 + i*20)' '34 + i*20','t_o(30 + i*20) + 4 + 1.5*t_st(30 + i*20)' '26 + i*20','t_o(30 + i*20) + 4 + 2.5*t_st(30 + i*20)' '34 + i*20','t_o(30 + i*20) + 4 + 3.5*t_st(30 + i*20)' '26 + i*20','t_o(30 + i*20) + 4 + 4.5*t_st(30 + i*20)' '34 + i*20','t_o(30 + i*20) + 4 + 5.5*t_st(30 + i*20)' '26 + i*20','t_o(30 + i*20) + 4 + 6.5*t_st(30 + i*20)' '30 + i*20','t_yg - 4' '30 + i*20','t_yg'" style="fill:none; stroke:#64748b; stroke-width:1; stroke-linejoin:round"/>
+#loop
+#for i = 0 : 43
+'  <polygon points="'20 + i*10','t_yt + t_w(20 + i*10)' '30 + i*10','t_yt + t_w(30 + i*10)' '30 + i*10','t_o(30 + i*10)' '20 + i*10','t_o(20 + i*10)'" style="fill:#cfd5dd; stroke:#cfd5dd; stroke-width:0.6"/>
+'  <line x1="'20 + i*10'" y1="'t_yt + t_w(20 + i*10)'" x2="'30 + i*10'" y2="'t_yt + t_w(30 + i*10)'" style="stroke:#334155; stroke-width:1.2"/>
+'  <line x1="'20 + i*10'" y1="'t_o(20 + i*10)'" x2="'30 + i*10'" y2="'t_o(30 + i*10)'" style="stroke:#334155; stroke-width:1.2"/>
+'  <polygon points="'20 + i*10','t_yp' '30 + i*10','t_yp' '30 + i*10','t_yp + t_p(30 + i*10)' '20 + i*10','t_yp + t_p(20 + i*10)'" style="fill:#dbeafe; stroke:#dbeafe; stroke-width:0.6"/>
+'  <line x1="'20 + i*10'" y1="'t_yp + t_p(20 + i*10)'" x2="'30 + i*10'" y2="'t_yp + t_p(30 + i*10)'" style="stroke:#1E40AF; stroke-width:1"/>
+#loop
+'  <line x1="20" y1="'t_yg'" x2="460" y2="'t_yg'" style="stroke:#8B6F47; stroke-width:1.4"/>
+#for i = 0 : 36
+'  <line x1="'24 + i*12'" y1="'t_yg'" x2="'18 + i*12'" y2="'t_yg + 7'" style="stroke:#8B6F47; stroke-width:0.8"/>
+#loop
+'  <line x1="20" y1="'t_yp'" x2="460" y2="'t_yp'" style="stroke:#1E40AF; stroke-width:0.8"/>
+'  <rect x="'240 - t_bw/2'" y="'t_yt + t_w0 - 3'" width="'t_bw'" height="3" style="fill:#B91C1C"/>
+'  <line x1="240" y1="24" x2="240" y2="'t_yt + t_w0 - 12'" style="stroke:#B91C1C; stroke-width:2.6"/>
+'  <polygon points="240,'t_yt + t_w0 - 3' 234.5,'t_yt + t_w0 - 14' 245.5,'t_yt + t_w0 - 14'" style="fill:#B91C1C"/>
+'  <text x="248" y="34" style="fill:#B91C1C; font-weight:700">F<tspan dy="2.5" font-size="8">Ed</tspan><tspan dy="-2.5"> = 'F_Ed,w/kN' kN per wiel</tspan></text>
+'  <text x="458" y="'t_yt - 6'" text-anchor="end" style="fill:#334155">vloer h = 'h/mm' mm</text>
+'  <text x="458" y="'t_yg - 6'" text-anchor="end" style="fill:#475569; stroke:#ffffff; stroke-width:3; paint-order:stroke; stroke-linejoin:round">veren k = 'k/(N/mm^3)' N/mm³</text>
+'  <text x="228" y="'t_yd + 4'" text-anchor="end" style="fill:#1E40AF">gronddruk p = k·w, max. 'p_max/(kN/m^2)' kN/m²</text>
+'  <line x1="'240 - 3.915*t_l'" y1="'t_yp - 4'" x2="'240 - 3.915*t_l'" y2="'t_yp + 4'" style="stroke:#1E40AF; stroke-width:1"/>
+'  <line x1="'240 + 3.915*t_l'" y1="'t_yp - 4'" x2="'240 + 3.915*t_l'" y2="'t_yp + 4'" style="stroke:#1E40AF; stroke-width:1"/>
+'  <text x="'240 - 3.915*t_l + 4'" y="'t_yp - 6'" style="fill:#1E40AF; font-size:9px">p = 0 bij 3,9·l</text>
+'  <line x1="240" y1="'t_yd'" x2="'240 + t_l'" y2="'t_yd'" style="stroke:#1E40AF; stroke-width:0.8"/>
+'  <circle cx="240" cy="'t_yd'" r="2.2" style="fill:#1E40AF"/>
+'  <circle cx="'240 + t_l'" cy="'t_yd'" r="2.2" style="fill:#1E40AF"/>
+'  <text x="'240 + t_l/2'" y="'t_yd + 14'" text-anchor="middle" style="fill:#1E40AF; font-weight:700">l = 'l/mm' mm</text>
+'</svg>'
+'Het wiel spreidt via de plaat over de ondergrond: w<sub>max</sub> = F<sub>Ed</sub>/(8·√(k·D)) = 'w_max/mm' mm en p<sub>max</sub> = k·w<sub>max</sub> = 'p_max/(kN/m^2)' kN/m², alsof 'F_Ed,w/kN' kN over 8·l² = 'A_sp/m^2' m² is verdeeld.
+
+'Westergaard; b is de gelijkwaardige straal voor een last midden in het veld<span class="alleen-scherm">. Voor de rand de formule van 1948, voor de hoek die van Ioannides. Midden en rand geven trek aan de onderzijde, een hoek aan de bovenzijde. Het tweede wiel van de as en de buurpoot liggen ruim een straal l verder en tellen hier niet mee; zie de toets met herverdeling in §4</span>.
+b_eq(a) = if(a < 1.724*h; sqrt(1.6*a^2 + h^2) - 0.675*h; a)
+M_mid(P; a) = (1 + ν)*P*b_s/(4*π)*(ln(l/b_eq(a)) + 0.6159)
+M_rand(P; a) = (1 + ν)*P*b_s/(2*π*(3 + ν))*(ln(E_cm*h^3/(100*k*a^4)) + 1.84 - 4*ν/3 + (1 - ν)/2 + 1.18*(1 + 2*ν)*a/l)
+M_hoek(P; a) = P*b_s/2*(1 - (1.772*a/l)^0.72)
+#hide
+M_w,m = M_mid(F_Ed,w; a_w) to kN*m
+M_w,r = e_r*(1 - β_v)*M_rand(F_Ed,w; a_w) to kN*m
+M_w,h = e_h*(1 - β_v)*M_hoek(F_Ed,w; a_w) to kN*m
+M_h,m = M_mid(F_Ed,h; a_h) to kN*m
+M_h,r = e_r*(1 - β_v)*M_rand(F_Ed,h; a_h) to kN*m
+M_h,h = e_h*(1 - β_v)*M_hoek(F_Ed,h; a_h) to kN*m
+M_p,m = M_mid(F_Ed,p; a_p) to kN*m
+M_p,r = e_r*(1 - β_v)*M_rand(F_Ed,p; a_p) to kN*m
+M_p,h = e_h*(1 - β_v)*M_hoek(F_Ed,p; a_p) to kN*m
+M_Ed,o = max(M_w,m; M_w,r; M_h,m; M_h,r; M_p,m; M_p,r)
+M_Ed,b = max(M_w,h; M_h,h; M_p,h)
+UC_ong = max(M_Ed,o; M_Ed,b)/M_cr
+#show
+
+'<table style="width:100%; border-collapse:collapse; font-size:0.9em;">
+'<tr style="border-bottom:1.5px solid #374151;"><th style="text-align:left; padding:1px 6px;">Last</th><th style="text-align:right; padding:1px 6px;">F<sub>Ed</sub> [kN]</th><th style="text-align:right; padding:1px 6px;">a [mm]</th><th style="text-align:right; padding:1px 6px;">midden [kNm/m]</th><th style="text-align:right; padding:1px 6px;">rand [kNm/m]</th><th style="text-align:right; padding:1px 6px;">hoek [kNm/m]</th></tr>
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:1px 6px;">Heftruckwiel</td><td style="text-align:right; padding:1px 6px;">'F_Ed,w/kN'</td><td style="text-align:right; padding:1px 6px;">'a_w/mm'</td><td style="text-align:right; padding:1px 6px;">'M_w,m/(kN*m)'</td><td style="text-align:right; padding:1px 6px;">'M_w,r/(kN*m)'</td><td style="text-align:right; padding:1px 6px;">'M_w,h/(kN*m)'</td></tr>
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:1px 6px;">Haspel</td><td style="text-align:right; padding:1px 6px;">'F_Ed,h/kN'</td><td style="text-align:right; padding:1px 6px;">'a_h/mm'</td><td style="text-align:right; padding:1px 6px;">'M_h,m/(kN*m)'</td><td style="text-align:right; padding:1px 6px;">'M_h,r/(kN*m)'</td><td style="text-align:right; padding:1px 6px;">'M_h,h/(kN*m)'</td></tr>
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:1px 6px;">Stellingpoot</td><td style="text-align:right; padding:1px 6px;">'F_Ed,p/kN'</td><td style="text-align:right; padding:1px 6px;">'a_p/mm'</td><td style="text-align:right; padding:1px 6px;">'M_p,m/(kN*m)'</td><td style="text-align:right; padding:1px 6px;">'M_p,r/(kN*m)'</td><td style="text-align:right; padding:1px 6px;">'M_p,h/(kN*m)'</td></tr>
+'</table>
+#if ligging ≡ 3
+    '<i>Alleen midden in het veld: rand en hoek tellen niet mee.</i>
+#else if ligging ≡ 2
+    '<i>Niet in hoeken: de hoek telt niet mee.</i>
+#end if
+
+M_Ed,o', grootste moment met trek onder<span class="kolom-2"></span>'
+M_Ed,b', grootste moment met trek boven<span class="kolom-2"></span>'
+UC_ong', max(M<sub>Ed,o</sub>; M<sub>Ed,b</sub>)/M<sub>cr</sub>: ongewapend, ongescheurd'
+#if UC_ong ≤ 1
+    '<span class="oordeel" style="color: green">De vloer blijft onder de rekenlast ongescheurd; vezels of wapening zijn voor deze lasten niet nodig.</span>
+#else
+    '<span class="oordeel" style="color: #b45309">De vloer scheurt onder de rekenlast: vezels of wapening moeten het moment overnemen.</span>
+#end if
+
+# 4. Staalvezelbeton
+
+f_R3 = ?{2.5}*(N/mm^2)', reststerkte f<sub>R,3,k</sub> (NEN-EN 14651)<span class="kolom-3"></span>'
+q_v = ?{30}*(kg/m^3)', dosering staalvezels<span class="kolom-3"></span>'
+γ_F = 1.5', vezelbeton op trek<span class="kolom-3"></span>'
+'<i>f<sub>R,3,k</sub> hoort bij de gekozen vezel en dosering en komt uit de opgave van de leverancier; de dosering zelf rekent niet mee.</i><span class="alleen-scherm"></span>
+f_Ftu = f_R3/(3*γ_F)', star-plastisch, fib Model Code 2010 (5.6.4)<span class="kolom-2"></span>'
+M_v = f_Ftu*b_s*h^2/2 to kN*m', na scheuren<span class="kolom-2"></span>'
+#hide
+M_Rd,v = max(M_cr; M_v)
+UC_v,el = max(M_Ed,o; M_Ed,b)/M_Rd,v
+#show
+UC_v,el', elastisch, per doorsnede: max(M<sub>Ed</sub>)/max(M<sub>cr</sub>; M<sub>v</sub>)'
+
+'<h6>Met herverdeling: breuklijnen (Meyerhof)</h6>
+'<span class="alleen-scherm">Na het eerste scheuren onder de last verdeelt het moment zich over een ring van breuklijnen. Zo rekent ook TR34 (Concrete Society): M<sub>p</sub> is de capaciteit met trek onder, hier de vezels na scheuren; M<sub>n</sub> die met trek boven, hier het scheurmoment, zodat de bovenzijde ongescheurd blijft. Tussen a/l = 0 en 0,2 wordt lineair geïnterpoleerd. Twee lasten op minder dan 2·l van elkaar werken samen.</span>
+#hide
+M_p = M_v/b_s
+M_n = M_cr/b_s
+M_pn = M_p + M_n
+'Draagvermogen per positie; a/l ≥ 0,2 met de formule zelf, daaronder lineair
+'tussen a/l = 0 en de waarde bij a/l = 0,2.
+P_m0 = 2*π*M_pn
+P_m2 = 4*π*M_pn/(1 - 0.2/3)
+P_mid(a) = if(a/l ≥ 0.2; 4*π*M_pn/(1 - a/(3*l)); P_m0 + (P_m2 - P_m0)*(a/l)/0.2)
+P_r0 = π*M_pn/2 + 2*M_n
+P_r2 = (π*M_pn + 4*M_n)/(1 - 2*0.2/3)
+P_rand(a) = if(a/l ≥ 0.2; (π*M_pn + 4*M_n)/(1 - 2*a/(3*l)); P_r0 + (P_r2 - P_r0)*(a/l)/0.2)
+P_k0 = 2*M_n
+P_k2 = 4*M_n/(1 - 0.2)
+P_hoek(a) = if(a/l ≥ 0.2; 4*M_n/(1 - a/l); P_k0 + (P_k2 - P_k0)*(a/l)/0.2)
+P_d0(x) = (2*π + 1.8*x/l)*M_pn
+P_d2(a; x) = (4*π/(1 - 0.2/3) + 1.8*x/(l - a/2))*M_pn
+P_dub(a; x) = if(a/l ≥ 0.2; (4*π/(1 - a/(3*l)) + 1.8*x/(l - a/2))*M_pn; P_d0(x) + (P_d2(a; x) - P_d0(x))*(a/l)/0.2)
+'UC per last en positie. Twee wielen (of twee poten) binnen 2·l: samen tegen
+'het draagvermogen van een dubbele last.
+UC_w,m = if(s_w < 2*l; 2*F_Ed,w/P_dub(a_w; s_w); F_Ed,w/P_mid(a_w))
+UC_w,r = e_r*(1 - β_v)*F_Ed,w/P_rand(a_w)
+UC_w,h = e_h*(1 - β_v)*F_Ed,w/P_hoek(a_w)
+UC_h,m = F_Ed,h/P_mid(a_h)
+UC_h,r = e_r*(1 - β_v)*F_Ed,h/P_rand(a_h)
+UC_h,h = e_h*(1 - β_v)*F_Ed,h/P_hoek(a_h)
+UC_p,m = if(s_p < 2*l; 2*F_Ed,p/P_dub(a_p; s_p); F_Ed,p/P_mid(a_p))
+UC_p,r = e_r*(1 - β_v)*F_Ed,p/P_rand(a_p)
+UC_p,h = e_h*(1 - β_v)*F_Ed,p/P_hoek(a_p)
+UC_v,pl = max(UC_w,m; UC_w,r; UC_w,h; UC_h,m; UC_h,r; UC_h,h; UC_p,m; UC_p,r; UC_p,h)
+'Benodigde reststerkte: het draagvermogen midden in het veld schaalt met
+'M_p + M_n, dat aan de rand met π·M_p + (π + 4)·M_n. In een hoek telt alleen M_n.
+UC_mid = max(UC_w,m; UC_h,m; UC_p,m)
+UC_r = max(UC_w,r; UC_h,r; UC_p,r)
+UC_k = max(UC_w,h; UC_h,h; UC_p,h)
+M_p,nodig = max(UC_mid*M_pn - M_n; (UC_r*(π*M_pn + 4*M_n) - (π + 4)*M_n)/π; 0 kN)
+#show
+'M<sub>p</sub> = M<sub>v</sub> = 'M_v/(kN*m)' en M<sub>n</sub> = M<sub>cr</sub> = 'M_cr/(kN*m)' kNm/m. Draagvermogen bij a/l = 0: midden 2π(M<sub>p</sub> + M<sub>n</sub>), rand π(M<sub>p</sub> + M<sub>n</sub>)/2 + 2M<sub>n</sub>, hoek 2M<sub>n</sub>; bij a/l ≥ 0,2: 4π(M<sub>p</sub> + M<sub>n</sub>)/(1 − a/3l), (π(M<sub>p</sub> + M<sub>n</sub>) + 4M<sub>n</sub>)/(1 − 2a/3l) en 4M<sub>n</sub>/(1 − a/l); twee lasten op afstand x &lt; 2l: + 1,8x/l·(M<sub>p</sub> + M<sub>n</sub>) resp. + 1,8x/(l − a/2)·(M<sub>p</sub> + M<sub>n</sub>), met 4π/(1 − a/3l) voor het tweede geval.
+'<table style="width:100%; border-collapse:collapse; font-size:0.9em;">
+'<tr style="border-bottom:1.5px solid #374151;"><th style="text-align:left; padding:1px 6px;">UC</th><th style="text-align:right; padding:1px 6px;">midden</th><th style="text-align:right; padding:1px 6px;">rand</th><th style="text-align:right; padding:1px 6px;">hoek</th></tr>
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:1px 6px;">Heftruckwiel'if(s_w < 2*l; " (twee wielen samen)"; "")'</td><td style="text-align:right; padding:1px 6px;">'UC_w,m'</td><td style="text-align:right; padding:1px 6px;">'UC_w,r'</td><td style="text-align:right; padding:1px 6px;">'UC_w,h'</td></tr>
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:1px 6px;">Haspel</td><td style="text-align:right; padding:1px 6px;">'UC_h,m'</td><td style="text-align:right; padding:1px 6px;">'UC_h,r'</td><td style="text-align:right; padding:1px 6px;">'UC_h,h'</td></tr>
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:1px 6px;">Stellingpoot'if(s_p < 2*l; " (twee poten samen)"; "")'</td><td style="text-align:right; padding:1px 6px;">'UC_p,m'</td><td style="text-align:right; padding:1px 6px;">'UC_p,r'</td><td style="text-align:right; padding:1px 6px;">'UC_p,h'</td></tr>
+'</table>
+UC_v,pl', maatgevend met herverdeling<span class="kolom-2"></span>'
+f_R3,nodig = 6*γ_F*M_p,nodig/h^2 to N/mm^2', nodig midden en langs randen<span class="kolom-2"></span>'
+#if UC_k > 1
+    '<span style="color: #b45309">In een hoek draagt alleen het ongescheurde beton (M<sub>n</sub>): meer vezels helpen daar niet. Wel een dikkere vloer, lastoverdracht in de voegen (β<sub>v</sub>) of geen zware lasten in hoeken.</span>
+#end if
+
+# 5. Wapeningsnet
+
+ø_b = ?{10}*(mm)', boven, Ø (0 = geen)<span class="kolom-4"></span>'
+s_b = ?{110}*(mm)', h.o.h.<span class="kolom-4"></span>'
+ø_o = ?{0}*(mm)', onder, Ø (0 = geen)<span class="kolom-4"></span>'
+s_o = ?{150}*(mm)', h.o.h.<span class="kolom-4"></span>'
+#hide
+f_yd = 500 N/mm^2/1.15
+d_b = h - c_nom - max(ø_b; 10 mm)/2
+d_o = h - c_nom - max(ø_o; 10 mm)/2
+A_s,b = π*ø_b^2/4*b_s/s_b to mm^2
+A_s,o = π*ø_o^2/4*b_s/s_o to mm^2
+A_s,b,nodig = M_Ed,b/(f_yd*0.9*d_b) to mm^2
+A_s,o,nodig = M_Ed,o/(f_yd*0.9*d_o) to mm^2
+M_Rd,b = max(M_cr; A_s,b*f_yd*0.9*d_b) to kN*m
+M_Rd,o = max(M_cr; A_s,o*f_yd*0.9*d_o) to kN*m
+UC_n,b = M_Ed,b/M_Rd,b
+UC_n,o = M_Ed,o/M_Rd,o
+#show
+'B500, f<sub>yd</sub> = 435 N/mm², z = 0,9·d; nodig is M<sub>Ed</sub>/(f<sub>yd</sub>·z), het staal alleen. M<sub>Rd</sub> = max(M<sub>cr</sub>; A<sub>s</sub>·f<sub>yd</sub>·z): ongescheurd, of na scheuren het net.
+'<table style="width:100%; border-collapse:collapse; font-size:0.9em;">
+'<tr style="border-bottom:1.5px solid #374151;"><th style="text-align:left; padding:1px 6px;">Net</th><th style="text-align:right; padding:1px 6px;">d [mm]</th><th style="text-align:right; padding:1px 6px;">M<sub>Ed</sub> [kNm/m]</th><th style="text-align:right; padding:1px 6px;">nodig [mm²/m]</th><th style="text-align:right; padding:1px 6px;">aanwezig [mm²/m]</th><th style="text-align:right; padding:1px 6px;">UC</th></tr>
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:1px 6px;">Boven</td><td style="text-align:right; padding:1px 6px;">'d_b/mm'</td><td style="text-align:right; padding:1px 6px;">'M_Ed,b/(kN*m)'</td><td style="text-align:right; padding:1px 6px;">'A_s,b,nodig/mm^2'</td><td style="text-align:right; padding:1px 6px;">'A_s,b/mm^2'</td><td style="text-align:right; padding:1px 6px;">'UC_n,b'</td></tr>
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:1px 6px;">Onder</td><td style="text-align:right; padding:1px 6px;">'d_o/mm'</td><td style="text-align:right; padding:1px 6px;">'M_Ed,o/(kN*m)'</td><td style="text-align:right; padding:1px 6px;">'A_s,o,nodig/mm^2'</td><td style="text-align:right; padding:1px 6px;">'A_s,o/mm^2'</td><td style="text-align:right; padding:1px 6px;">'UC_n,o'</td></tr>
+'</table>
+'<i>Het blad rekent hier elastisch, zonder herverdeling: het net draagt het grootste moment uit §3 zelf. Zonder net onder blijft de vloer onder een last alleen heel als het ongewapende beton het moment draagt. Scheurwijdte, krimp en temperatuur vallen buiten dit blad.</i><span class="alleen-scherm"></span>
+
+# 6. Contactdruk en pons
+
+#hide
+f_cd = f_ck/γ_c
+d_p = 0.75*h
+k_p = min(1 + sqrt(200 mm/d_p); 2)
+v_min = 0.035*k_p^1.5*sqrt(f_ck/MPa)*MPa to N/mm^2
+v_max = 0.5*0.6*(1 - f_ck/(250 N/mm^2))*f_cd
+u_0(b; c) = 2*(b + c)
+u_1(b; c) = 2*(b + c) + 4*π*d_p
+σ_w = F_Ed,w/(b_w*l_w) to N/mm^2
+σ_h = F_Ed,h/(b_h*l_h) to N/mm^2
+σ_p = F_Ed,p/(b_p*l_p) to N/mm^2
+UC_c = max(σ_w; σ_h; σ_p)/f_cd
+UC_pons,w = max(F_Ed,w/(v_max*u_0(b_w; l_w)*d_p); F_Ed,w/(v_min*u_1(b_w; l_w)*d_p))
+UC_pons,h = max(F_Ed,h/(v_max*u_0(b_h; l_h)*d_p); F_Ed,h/(v_min*u_1(b_h; l_h)*d_p))
+UC_pons,p = max(F_Ed,p/(v_max*u_0(b_p; l_p)*d_p); F_Ed,p/(v_min*u_1(b_p; l_p)*d_p))
+UC_pons = max(UC_pons,w; UC_pons,h; UC_pons,p)
+#show
+'Contactdruk F<sub>Ed</sub>/A tegen f<sub>cd</sub> = 'f_cd/(N/mm^2)' N/mm²: wiel 'σ_w/(N/mm^2)', haspel 'σ_h/(N/mm^2)' en voetplaat 'σ_p/(N/mm^2)' N/mm².
+UC_c'<span class="kolom-2"></span>'
+'Pons volgens NEN-EN 1992-1-1 6.4 met d = 0,75·h = 'd_p/mm' mm (TR34): aan de rand van het contactvlak tegen v<sub>max</sub> = 'v_max/(N/mm^2)' N/mm² (6.5), op 2·d tegen v<sub>min</sub> = 'v_min/(N/mm^2)' N/mm² (6.3N), zonder de gronddruk binnen de omtrek af te trekken.
+UC_pons'<span class="kolom-2"></span>'
+
+# 7. Samenvatting
+
+#hide
+c_1 = "#b91c1c"
+c_2 = "#b45309"
+c_3 = "#047857"
+kleur(u) = if(u > 1; c_1; if(u > 0.9; c_2; c_3))
+oordeel(u) = if(u ≤ 1; "voldoet"; "voldoet niet")
+UC_vezel = max(UC_v,pl; UC_c; UC_pons)
+UC_net = max(UC_n,b; UC_n,o; UC_c; UC_pons)
+#show
+'<table style="width:100%; border-collapse:collapse; font-size:0.95em;">
+'<tr style="border-bottom:2px solid #374151;"><th style="text-align:left; padding:2px 8px;">Toets</th><th style="text-align:right; padding:2px 8px;">UC</th><th style="text-align:left; padding:2px 8px;"></th></tr>
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Ongewapend, ongescheurd</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_ong)'">'UC_ong'</td><td style="padding:2px 8px; color:'kleur(UC_ong)'">'oordeel(UC_ong)'</td></tr>
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Staalvezelbeton, elastisch</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_v,el)'">'UC_v,el'</td><td style="padding:2px 8px; color:'kleur(UC_v,el)'">'oordeel(UC_v,el)'</td></tr>
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Staalvezelbeton, met herverdeling</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_v,pl)'">'UC_v,pl'</td><td style="padding:2px 8px; color:'kleur(UC_v,pl)'">'oordeel(UC_v,pl)'</td></tr>
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Net boven</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_n,b)'">'UC_n,b'</td><td style="padding:2px 8px; color:'kleur(UC_n,b)'">'oordeel(UC_n,b)'</td></tr>
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Net onder</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_n,o)'">'UC_n,o'</td><td style="padding:2px 8px; color:'kleur(UC_n,o)'">'oordeel(UC_n,o)'</td></tr>
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Contactdruk</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_c)'">'UC_c'</td><td style="padding:2px 8px; color:'kleur(UC_c)'">'oordeel(UC_c)'</td></tr>
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Pons</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_pons)'">'UC_pons'</td><td style="padding:2px 8px; color:'kleur(UC_pons)'">'oordeel(UC_pons)'</td></tr>
+'</table>
+
+#if UC_vezel ≤ 1
+    '<span class="oordeel" style="color: green"><b>Staalvezelbeton voldoet</b> met f<sub>R,3,k</sub> = 'f_R3/(N/mm^2)' N/mm² ('q_v/(kg/m^3)' kg/m³ vezels), met herverdeling (UC = 'UC_vezel').</span>
+#else
+    '<span class="oordeel" style="color: red"><b>Staalvezelbeton voldoet niet</b> met f<sub>R,3,k</sub> = 'f_R3/(N/mm^2)' N/mm² (UC = 'UC_vezel'): kies een hogere reststerkte, een dikkere vloer of lastoverdracht in de voegen.</span>
+#end if
+#if UC_net ≤ 1
+    '<span class="oordeel" style="color: green"><b>Het wapeningsnet voldoet</b> (UC = 'UC_net').</span>
+#else
+    '<span class="oordeel" style="color: red"><b>Het wapeningsnet voldoet niet</b> (UC = 'UC_net'): nodig zijn 'A_s,b,nodig/mm^2' mm²/m boven en 'A_s,o,nodig/mm^2' mm²/m onder.</span>
+#end if
+
+'Buiten dit blad: vermoeiing door veel heftruckritten, krimp en temperatuur, scheurwijdte, zettingen van de ondergrond en de voegen zelf.

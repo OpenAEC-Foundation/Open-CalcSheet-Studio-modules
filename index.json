@@ -24,6 +24,33 @@
       "blad": "balklaag.cpd",
       "beeld": "beeld.webp",
       "minimaleAppVersie": "2026.44.0"
+    },
+    {
+      "id": "vloer-op-grondslag",
+      "versie": "2026.45.0",
+      "naam": {
+        "nl": "Bedrijfsvloer op grondslag (puntlasten)",
+        "en": "Industrial ground-bearing floor (point loads)"
+      },
+      "omschrijving": {
+        "nl": "Betonvloer op een verende ondergrond onder een heftruckwiel, een haspel en een stellingpoot: momenten volgens Westergaard met de beddingsconstante uit CUR-Aanbeveling 36, daarna staalvezelbeton (ook met breuklijnen) en een wapeningsnet naast elkaar, met contactdruk en pons.",
+        "en": "Concrete floor on an elastic subgrade under a forklift wheel, a reel and a racking leg: Westergaard moments with the modulus of subgrade reaction, then steel fibre concrete (also by yield lines) and a reinforcing mesh side by side, with contact pressure and punching."
+      },
+      "categorie": "beton",
+      "status": "concept",
+      "gepubliceerd": false,
+      "normen": [
+        "CUR-Aanbeveling 36",
+        "NEN-EN 1990 + NB",
+        "NEN-EN 1991-1-1 + NB",
+        "NEN-EN 1992-1-1 + NB",
+        "NEN-EN 14651",
+        "fib Model Code 2010"
+      ],
+      "map": "modules/vloer-op-grondslag",
+      "blad": "vloer-op-grondslag.cpd",
+      "beeld": "beeld.webp",
+      "minimaleAppVersie": "2026.45.2"
     }
   ]
 }
