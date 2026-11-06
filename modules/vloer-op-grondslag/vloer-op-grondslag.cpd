@@ -122,7 +122,7 @@ t_p(x) = t_p0*max(0; vorm((x - 240)/t_l))
 t_o(x) = t_yt + t_h + t_w(x)
 t_st(x) = (t_yg - t_o(x) - 8)/7
 #show
-'<svg viewbox="0 0 480 't_yd + 26'" xmlns="http://www.w3.org/2000/svg" style="font-size:11px; width:100%; max-height:'t_yd + 30'px;">
+'<svg viewbox="0 0 480 't_yd + 26'" xmlns="http://www.w3.org/2000/svg" style="font-size:11px; width:100%; max-height:'1.4*(t_yd + 26)'px;">
 '  <text x="20" y="14" style="fill:#64748b">Vloer op veren (Winkler), doorbuiging overdreven</text>
 '  <rect x="20" y="'t_yt'" width="440" height="'t_h'" style="fill:none; stroke:#94a3b8; stroke-width:0.8; stroke-dasharray:4 3"/>
 #for i = 0 : 21
@@ -184,9 +184,9 @@ UC_ong = max(M_Ed,o; M_Ed,b)/M_cr
 '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:1px 6px;">Stellingpoot</td><td style="text-align:right; padding:1px 6px;">'F_Ed,p/kN'</td><td style="text-align:right; padding:1px 6px;">'a_p/mm'</td><td style="text-align:right; padding:1px 6px;">'M_p,m/(kN*m)'</td><td style="text-align:right; padding:1px 6px;">'M_p,r/(kN*m)'</td><td style="text-align:right; padding:1px 6px;">'M_p,h/(kN*m)'</td></tr>
 '</table>
 #if ligging ≡ 3
-    '<i>Alleen midden in het veld: rand en hoek tellen niet mee.</i>
+    '<i class="ook-afdruk">Alleen midden in het veld: rand en hoek tellen niet mee.</i>
 #else if ligging ≡ 2
-    '<i>Niet in hoeken: de hoek telt niet mee.</i>
+    '<i class="ook-afdruk">Niet in hoeken: de hoek telt niet mee.</i>
 #end if
 
 M_Ed,o', grootste moment met trek onder<span class="kolom-2"></span>'
@@ -298,7 +298,7 @@ UC_n,o = M_Ed,o/M_Rd,o
 '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:1px 6px;">Onder</td><td style="text-align:right; padding:1px 6px;">'d_o/mm'</td><td style="text-align:right; padding:1px 6px;">'M_Ed,o/(kN*m)'</td><td style="text-align:right; padding:1px 6px;">'A_s,o,nodig/mm^2'</td><td style="text-align:right; padding:1px 6px;">'A_s,o/mm^2'</td><td style="text-align:right; padding:1px 6px;">'UC_n,o'</td></tr>
 '</table>
 #if M_Ed,b ≤ 0 kN*m
-    '<i>Met de lasten midden in het veld geeft het blad geen moment met trek boven: het net boven is constructief, voor krimp, temperatuur en de momenten in een ring rond de last.</i>
+    '<i class="ook-afdruk">Met de lasten midden in het veld geeft het blad geen moment met trek boven: het net boven is constructief, voor krimp, temperatuur en de momenten in een ring rond de last.</i>
 #end if
 '<i>Het blad rekent hier elastisch, zonder herverdeling: het net draagt het grootste moment uit de momenten hierboven zelf. Zonder net onder blijft de vloer onder een last alleen heel als het ongewapende beton het moment draagt. Scheurwijdte, krimp en temperatuur vallen buiten dit blad.</i><span class="alleen-scherm"></span>
 
@@ -358,7 +358,11 @@ UC_net = max(UC_n,b; UC_n,o; UC_c; UC_pons)
 '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Staalvezelbeton, met herverdeling</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_v,pl)'">'UC_v,pl'</td><td style="padding:2px 8px; color:'kleur(UC_v,pl)'">'oordeel(UC_v,pl)'</td></tr>
 #end if
 #if u_net ≡ 1
+#if M_Ed,b ≤ 0 kN*m
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Net boven</td><td style="text-align:right; padding:2px 8px; color:#6b7280">—</td><td style="padding:2px 8px; color:#6b7280">constructief</td></tr>
+#else
 '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Net boven</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_n,b)'">'UC_n,b'</td><td style="padding:2px 8px; color:'kleur(UC_n,b)'">'oordeel(UC_n,b)'</td></tr>
+#end if
 '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Net onder</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_n,o)'">'UC_n,o'</td><td style="padding:2px 8px; color:'kleur(UC_n,o)'">'oordeel(UC_n,o)'</td></tr>
 #end if
 '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Contactdruk</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_c)'">'UC_c'</td><td style="padding:2px 8px; color:'kleur(UC_c)'">'oordeel(UC_c)'</td></tr>
