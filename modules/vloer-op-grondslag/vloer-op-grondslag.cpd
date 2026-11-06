@@ -1,7 +1,7 @@
 "Bedrijfsvloer op grondslag — puntlasten
 
 '<i>Een betonvloer op een verende ondergrond onder geconcentreerde lasten: een heftruckwiel, de oplegging van een haspel op de vloer en een stellingpoot. De momenten volgen uit de plaattheorie van Westergaard met de beddingsconstante k van de ondergrond, zoals CUR-Aanbeveling 36 die gebruikt. Daarna staan twee uitvoeringen naast elkaar: staalvezelbeton en een wapeningsnet.</i><span class="alleen-scherm"></span>
-# 1. Vloer en ondergrond
+# Vloer en ondergrond
 
 h = ?{200}*(mm)', vloerdikte<span class="kolom-3"></span>'
 k = ?{0.05}*(N/mm^3)', beddingsconstante<span class="kolom-3"></span>'
@@ -23,6 +23,16 @@ c_nom = ?{30}*(mm)', betondekking<span class="kolom-3"></span>'
 @end
 '<i>Een rand of hoek is een vrije rand van de vloer of een voeg zonder lastoverdracht. Bij een voeg met deuvels of een gezaagde voeg gaat een deel van de last naar het buurveld; geef dat deel op bij de belastingen (β<sub>v</sub>).</i><span class="alleen-scherm"></span>
 
+@select uitvoering "Uitvoering"
+  Staalvezelbeton en wapeningsnet vergelijken = 3
+  Wapeningsnet = 1
+  Staalvezelbeton = 2
+@end
+#hide
+u_net = bool(uitvoering ≠ 2)
+u_vez = bool(uitvoering ≠ 1)
+#show
+
 #hide
 'NEN-EN 1992-1-1 tabel 3.1 en 3.1.8 (3.23).
 f_ck = betonklasse*N/mm^2
@@ -41,7 +51,7 @@ b_s = 1000 mm', strook van 1 m<span class="alleen-scherm">: momenten en wapening
 l = (E_cm*h^3/(12*(1 - ν^2)*k))^0.25 to mm', straal van de relatieve stijfheid'
 M_cr = f_ctd,fl*b_s*h^2/6 to kN*m', scheurmoment ongewapend, per m'
 
-# 2. Belastingen
+# Belastingen
 
 #hide
 γ_Q = if(CC ≡ 1; 1.35; if(CC ≡ 3; 1.65; 1.5))
@@ -85,7 +95,7 @@ F_Ed,w', wiel<span class="kolom-3"></span>'
 F_Ed,h', haspel<span class="kolom-3"></span>'
 F_Ed,p', poot<span class="kolom-3"></span>'
 
-# 3. Momenten (elastisch)
+# Momenten (elastisch)
 
 #hide
 'Spreiding van het wiel over de ondergrond: doorbuiging en gronddruk onder
@@ -147,7 +157,7 @@ t_st(x) = (t_yg - t_o(x) - 8)/7
 '</svg>'
 'Het wiel spreidt via de plaat over de ondergrond: w<sub>max</sub> = F<sub>Ed</sub>/(8·√(k·D)) = 'w_max/mm' mm en p<sub>max</sub> = k·w<sub>max</sub> = 'p_max/(kN/m^2)' kN/m², alsof 'F_Ed,w/kN' kN over 8·l² = 'A_sp/m^2' m² is verdeeld.
 
-'Westergaard; b is de gelijkwaardige straal voor een last midden in het veld<span class="alleen-scherm">. Voor de rand de formule van 1948, voor de hoek die van Ioannides. Midden en rand geven trek aan de onderzijde, een hoek aan de bovenzijde. Het tweede wiel van de as en de buurpoot liggen ruim een straal l verder en tellen hier niet mee; zie de toets met herverdeling in §4</span>.
+'Westergaard; b is de gelijkwaardige straal voor een last midden in het veld<span class="alleen-scherm">. Voor de rand de formule van 1948, voor de hoek die van Ioannides. Midden en rand geven trek aan de onderzijde, een hoek aan de bovenzijde. Het tweede wiel van de as en de buurpoot liggen ruim een straal l verder en tellen hier niet mee; zie de toets met herverdeling bij staalvezelbeton</span>.
 b_eq(a) = if(a < 1.724*h; sqrt(1.6*a^2 + h^2) - 0.675*h; a)
 M_mid(P; a) = (1 + ν)*P*b_s/(4*π)*(ln(l/b_eq(a)) + 0.6159)
 M_rand(P; a) = (1 + ν)*P*b_s/(2*π*(3 + ν))*(ln(E_cm*h^3/(100*k*a^4)) + 1.84 - 4*ν/3 + (1 - ν)/2 + 1.18*(1 + 2*ν)*a/l)
@@ -188,7 +198,8 @@ UC_ong', max(M<sub>Ed,o</sub>; M<sub>Ed,b</sub>)/M<sub>cr</sub>: ongewapend, ong
     '<span class="oordeel" style="color: #b45309">De vloer scheurt onder de rekenlast: vezels of wapening moeten het moment overnemen.</span>
 #end if
 
-# 4. Staalvezelbeton
+#if u_vez ≡ 1
+# Staalvezelbeton
 
 f_R3 = ?{2.5}*(N/mm^2)', reststerkte f<sub>R,3,k</sub> (NEN-EN 14651)<span class="kolom-3"></span>'
 q_v = ?{30}*(kg/m^3)', dosering staalvezels<span class="kolom-3"></span>'
@@ -254,7 +265,14 @@ f_R3,nodig = 6*γ_F*M_p,nodig/h^2 to N/mm^2', nodig midden en langs randen<span 
     '<span style="color: #b45309">In een hoek draagt alleen het ongescheurde beton (M<sub>n</sub>): meer vezels helpen daar niet. Wel een dikkere vloer, lastoverdracht in de voegen (β<sub>v</sub>) of geen zware lasten in hoeken.</span>
 #end if
 
-# 5. Wapeningsnet
+#else
+#hide
+UC_v,el = 0
+UC_v,pl = 0
+#show
+#end if
+#if u_net ≡ 1
+# Wapeningsnet
 
 ø_b = ?{10}*(mm)', boven, Ø (0 = geen)<span class="kolom-4"></span>'
 s_b = ?{110}*(mm)', h.o.h.<span class="kolom-4"></span>'
@@ -279,9 +297,23 @@ UC_n,o = M_Ed,o/M_Rd,o
 '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:1px 6px;">Boven</td><td style="text-align:right; padding:1px 6px;">'d_b/mm'</td><td style="text-align:right; padding:1px 6px;">'M_Ed,b/(kN*m)'</td><td style="text-align:right; padding:1px 6px;">'A_s,b,nodig/mm^2'</td><td style="text-align:right; padding:1px 6px;">'A_s,b/mm^2'</td><td style="text-align:right; padding:1px 6px;">'UC_n,b'</td></tr>
 '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:1px 6px;">Onder</td><td style="text-align:right; padding:1px 6px;">'d_o/mm'</td><td style="text-align:right; padding:1px 6px;">'M_Ed,o/(kN*m)'</td><td style="text-align:right; padding:1px 6px;">'A_s,o,nodig/mm^2'</td><td style="text-align:right; padding:1px 6px;">'A_s,o/mm^2'</td><td style="text-align:right; padding:1px 6px;">'UC_n,o'</td></tr>
 '</table>
-'<i>Het blad rekent hier elastisch, zonder herverdeling: het net draagt het grootste moment uit §3 zelf. Zonder net onder blijft de vloer onder een last alleen heel als het ongewapende beton het moment draagt. Scheurwijdte, krimp en temperatuur vallen buiten dit blad.</i><span class="alleen-scherm"></span>
+#if M_Ed,b ≤ 0 kN*m
+    '<i>Met de lasten midden in het veld geeft het blad geen moment met trek boven: het net boven is constructief, voor krimp, temperatuur en de momenten in een ring rond de last.</i>
+#end if
+'<i>Het blad rekent hier elastisch, zonder herverdeling: het net draagt het grootste moment uit de momenten hierboven zelf. Zonder net onder blijft de vloer onder een last alleen heel als het ongewapende beton het moment draagt. Scheurwijdte, krimp en temperatuur vallen buiten dit blad.</i><span class="alleen-scherm"></span>
 
-# 6. Contactdruk en pons
+#else
+#hide
+A_s,b = 0 mm^2
+A_s,o = 0 mm^2
+A_s,b,nodig = 0 mm^2
+A_s,o,nodig = 0 mm^2
+UC_n,b = 0
+UC_n,o = 0
+#show
+#end if
+
+# Contactdruk en pons
 
 #hide
 f_cd = f_ck/γ_c
@@ -305,7 +337,7 @@ UC_c'<span class="kolom-2"></span>'
 'Pons volgens NEN-EN 1992-1-1 6.4 met d = 0,75·h = 'd_p/mm' mm (TR34): aan de rand van het contactvlak tegen v<sub>max</sub> = 'v_max/(N/mm^2)' N/mm² (6.5), op 2·d tegen v<sub>min</sub> = 'v_min/(N/mm^2)' N/mm² (6.3N), zonder de gronddruk binnen de omtrek af te trekken.
 UC_pons'<span class="kolom-2"></span>'
 
-# 7. Samenvatting
+# Samenvatting
 
 #hide
 c_1 = "#b91c1c"
@@ -318,23 +350,29 @@ UC_net = max(UC_n,b; UC_n,o; UC_c; UC_pons)
 #show
 '<table style="width:100%; border-collapse:collapse; font-size:0.95em;">
 '<tr style="border-bottom:2px solid #374151;"><th style="text-align:left; padding:2px 8px;">Toets</th><th style="text-align:right; padding:2px 8px;">UC</th><th style="text-align:left; padding:2px 8px;"></th></tr>
+#if uitvoering ≡ 3
 '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Ongewapend, ongescheurd</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_ong)'">'UC_ong'</td><td style="padding:2px 8px; color:'kleur(UC_ong)'">'oordeel(UC_ong)'</td></tr>
+#end if
+#if u_vez ≡ 1
 '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Staalvezelbeton, elastisch</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_v,el)'">'UC_v,el'</td><td style="padding:2px 8px; color:'kleur(UC_v,el)'">'oordeel(UC_v,el)'</td></tr>
 '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Staalvezelbeton, met herverdeling</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_v,pl)'">'UC_v,pl'</td><td style="padding:2px 8px; color:'kleur(UC_v,pl)'">'oordeel(UC_v,pl)'</td></tr>
+#end if
+#if u_net ≡ 1
 '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Net boven</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_n,b)'">'UC_n,b'</td><td style="padding:2px 8px; color:'kleur(UC_n,b)'">'oordeel(UC_n,b)'</td></tr>
 '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Net onder</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_n,o)'">'UC_n,o'</td><td style="padding:2px 8px; color:'kleur(UC_n,o)'">'oordeel(UC_n,o)'</td></tr>
+#end if
 '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Contactdruk</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_c)'">'UC_c'</td><td style="padding:2px 8px; color:'kleur(UC_c)'">'oordeel(UC_c)'</td></tr>
 '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Pons</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_pons)'">'UC_pons'</td><td style="padding:2px 8px; color:'kleur(UC_pons)'">'oordeel(UC_pons)'</td></tr>
 '</table>
 
-#if UC_vezel ≤ 1
+#if u_vez*bool(UC_vezel ≤ 1) ≡ 1
     '<span class="oordeel" style="color: green"><b>Staalvezelbeton voldoet</b> met f<sub>R,3,k</sub> = 'f_R3/(N/mm^2)' N/mm² ('q_v/(kg/m^3)' kg/m³ vezels), met herverdeling (UC = 'UC_vezel').</span>
-#else
+#else if u_vez ≡ 1
     '<span class="oordeel" style="color: red"><b>Staalvezelbeton voldoet niet</b> met f<sub>R,3,k</sub> = 'f_R3/(N/mm^2)' N/mm² (UC = 'UC_vezel'): kies een hogere reststerkte, een dikkere vloer of lastoverdracht in de voegen.</span>
 #end if
-#if UC_net ≤ 1
+#if u_net*bool(UC_net ≤ 1) ≡ 1
     '<span class="oordeel" style="color: green"><b>Het wapeningsnet voldoet</b> (UC = 'UC_net').</span>
-#else
+#else if u_net ≡ 1
     '<span class="oordeel" style="color: red"><b>Het wapeningsnet voldoet niet</b> (UC = 'UC_net'): nodig zijn 'A_s,b,nodig/mm^2' mm²/m boven en 'A_s,o,nodig/mm^2' mm²/m onder.</span>
 #end if
 

@@ -24,6 +24,8 @@ de gelijkwaardige straal b), de formule van 1948 voor de rand en die van
 Ioannides voor de hoek. Een tekening toont de vloer op veren met de
 doorbuigingskom en de gronddruk onder het wiel (w_max = F/(8·√(k·D))).
 
+**Uitvoering:** wapeningsnet, staalvezelbeton of beide naast elkaar; het blad toont alleen de gekozen toetsen.
+
 **Toetsen:**
 
 - ongewapend en ongescheurd: het grootste moment tegen het scheurmoment met
