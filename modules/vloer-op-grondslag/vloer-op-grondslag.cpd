@@ -97,6 +97,19 @@ F_Ed,p', poot<span class="kolom-3"></span>'
 
 # Momenten (elastisch)
 
+@select methode "Moment onder een last midden in het veld"
+  Westergaard: piek in de plaat onder de last = 1
+  Spreiden over een strook: ligger op veren = 2
+@end
+#if methode ≡ 2
+    b_str = ?{1000}*(mm)', breedte van de strook<span class="kolom-3"></span>'
+#else
+    #hide
+    b_str = 1000 mm
+    #show
+#end if
+'<i>Westergaard geeft het grootste moment in de plaat, recht onder de last. Bij een strook wordt de last verdeeld over een strook van b<sub>str</sub> breed die als ligger op veren werkt, met de stijfheid van de plaat; de rand en de hoek blijven volgens Westergaard.</i><span class="alleen-scherm"></span>
+
 #hide
 'Spreiding van het wiel over de ondergrond: doorbuiging en gronddruk onder
 'een puntlast op een oneindige plaat op veren, w_max = F/(8·√(k·D)).
@@ -163,13 +176,27 @@ M_mid(P; a) = (1 + ν)*P*b_s/(4*π)*(ln(l/b_eq(a)) + 0.6159)
 M_rand(P; a) = (1 + ν)*P*b_s/(2*π*(3 + ν))*(ln(E_cm*h^3/(100*k*a^4)) + 1.84 - 4*ν/3 + (1 - ν)/2 + 1.18*(1 + 2*ν)*a/l)
 M_hoek(P; a) = P*b_s/2*(1 - (1.772*a/l)^0.72)
 #hide
-M_w,m = M_mid(F_Ed,w; a_w) to kN*m
+'Strook: een ligger op veren met de stijfheid D en de beddingsconstante k per
+'meter breedte, β = (k/(4·D))^¼ = 1/(√2·l); het moment onder een puntlast is
+'P/(4β), verdeeld over de breedte b_str. Over de volle breedte van de plaat is
+'dat ook de som van de momenten van Westergaard; b_W is de strook waarover
+'Westergaard het wiel gelijkmatig zou verdelen.
+L_β = sqrt(2)*l
+M_str(P) = P*L_β/4*b_s/b_str
+M_m(P; a) = if(methode ≡ 2; M_str(P); M_mid(P; a))
+b_W = F_Ed,w*L_β/4*b_s/M_mid(F_Ed,w; a_w) to mm
+#show
+#if methode ≡ 2
+    'Midden in het veld over een strook van b<sub>str</sub> = 'b_str/mm' mm: M = P/(4β)·(1 m)/b<sub>str</sub>, met 1/β = √2·l = 'L_β/mm' mm (ligger op veren). Westergaard geeft onder het wiel 'M_mid(F_Ed,w; a_w)/(kN*m)' kNm/m; dat is hetzelfde als het wiel spreiden over 'b_W/mm' mm.
+#end if
+#hide
+M_w,m = M_m(F_Ed,w; a_w) to kN*m
 M_w,r = e_r*(1 - β_v)*M_rand(F_Ed,w; a_w) to kN*m
 M_w,h = e_h*(1 - β_v)*M_hoek(F_Ed,w; a_w) to kN*m
-M_h,m = M_mid(F_Ed,h; a_h) to kN*m
+M_h,m = M_m(F_Ed,h; a_h) to kN*m
 M_h,r = e_r*(1 - β_v)*M_rand(F_Ed,h; a_h) to kN*m
 M_h,h = e_h*(1 - β_v)*M_hoek(F_Ed,h; a_h) to kN*m
-M_p,m = M_mid(F_Ed,p; a_p) to kN*m
+M_p,m = M_m(F_Ed,p; a_p) to kN*m
 M_p,r = e_r*(1 - β_v)*M_rand(F_Ed,p; a_p) to kN*m
 M_p,h = e_h*(1 - β_v)*M_hoek(F_Ed,p; a_p) to kN*m
 M_Ed,o = max(M_w,m; M_w,r; M_h,m; M_h,r; M_p,m; M_p,r)

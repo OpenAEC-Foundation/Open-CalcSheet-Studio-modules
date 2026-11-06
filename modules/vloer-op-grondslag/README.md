@@ -24,6 +24,8 @@ de gelijkwaardige straal b), de formule van 1948 voor de rand en die van
 Ioannides voor de hoek. Een tekening toont de vloer op veren met de
 doorbuigingskom en de gronddruk onder het wiel (w_max = F/(8·√(k·D))).
 
+**Strook:** in plaats van de piek volgens Westergaard kan het moment onder een last midden in het veld over een strook van b_str breed worden verdeeld, als ligger op veren met de stijfheid van de plaat: M = P/(4β)/b_str met 1/β = √2·l. Het blad noemt de strookbreedte die met Westergaard overeenkomt.
+
 **Uitvoering:** wapeningsnet, staalvezelbeton of beide naast elkaar; het blad toont alleen de gekozen toetsen.
 
 **Toetsen:**
