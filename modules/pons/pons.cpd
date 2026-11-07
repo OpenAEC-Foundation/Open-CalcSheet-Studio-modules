@@ -1,0 +1,330 @@
+"Pons — plaat op een kolom of paal (NEN-EN 1992-1-1, 6.4)
+
+'<i>Pons rond een geconcentreerde oplegging van een plaat: een kolom, of een paal onder een vloer. Het blad toetst de rand van het steunvlak (u<sub>0</sub>) en de basiscontroleomtrek op 2d (u<sub>1</sub>), en rekent bij een tekort de ponswapening en de omtrek u<sub>out</sub> waarbuiten geen wapening meer nodig is.</i><span class="alleen-scherm"></span>
+# Plaat en wapening
+
+h = ?{220}*(mm)', plaatdikte<span class="kolom-3"></span>'
+c_nom = ?{30}*(mm)', dekking<span class="kolom-3"></span>'
+@select betonklasse "Betonsterkteklasse"
+  C30/37 = 30
+  C20/25 = 20
+  C25/30 = 25
+  C28/35 = 28
+  C35/45 = 35
+  C45/55 = 45
+@end
+ø_x = ?{12}*(mm)', trekwapening x, Ø<span class="kolom-4"></span>'
+s_x = ?{150}*(mm)', h.o.h.<span class="kolom-4"></span>'
+ø_y = ?{12}*(mm)', trekwapening y, Ø<span class="kolom-4"></span>'
+s_y = ?{150}*(mm)', h.o.h.<span class="kolom-4"></span>'
+'<i>De trekwapening ligt aan de kant waar de plaat boven de oplegging trek krijgt: boven bij een plaat op een kolom of paal. De wapening in x ligt buiten, die in y daaronder. Tel alleen wapening mee die over de breedte van het steunvlak plus 3d aan weerszijden ligt (6.4.4(1)).</i><span class="alleen-scherm"></span>
+
+#hide
+f_ck = betonklasse*N/mm^2
+γ_c = 1.5
+f_cd = f_ck/γ_c
+f_yd = 500 N/mm^2/1.15
+d_x = h - c_nom - ø_x/2
+d_y = h - c_nom - ø_x - ø_y/2
+A_sx = π*ø_x^2/4*1000 mm/s_x
+A_sy = π*ø_y^2/4*1000 mm/s_y
+ρ_x = A_sx/(1000 mm*d_x)
+ρ_y = A_sy/(1000 mm*d_y)
+#show
+d = (d_x + d_y)/2', 6.4.2(1)<span class="kolom-3"></span>'
+ρ_l = min(sqrt(ρ_x*ρ_y); 0.02)', 6.4.4(1)<span class="kolom-3"></span>'
+k = min(1 + sqrt(200 mm/d); 2)'<span class="kolom-3"></span>'
+
+# Oplegging en belasting
+
+@select vorm "Steunvlak"
+  Rond (paal of ronde kolom) = 1
+  Rechthoekig = 2
+@end
+#if vorm ≡ 1
+    D = ?{400}*(mm)', diameter<span class="kolom-3"></span>'
+    #hide
+    c_1 = D
+    c_2 = D
+    #show
+#else
+    c_1 = ?{300}*(mm)', breedte loodrecht op de rand<span class="kolom-3"></span>'
+    c_2 = ?{300}*(mm)', breedte langs de rand<span class="kolom-3"></span>'
+    #hide
+    D = 0 mm
+    #show
+#end if
+@select ligging "Ligging"
+  Binnen in de plaat = 1
+  Aan een rand = 2
+  In een hoek = 3
+@end
+V_Ed = ?{400}*(kN)', oplegreactie (rekenwaarde)<span class="kolom-3"></span>'
+q_Ed = ?{0}*(kN/m^2)', last op de plaat binnen u<sub>1</sub><span class="kolom-3"></span>'
+'<i>Een last op de plaat binnen de controleomtrek gaat rechtstreeks naar de oplegging en passeert u<sub>1</sub> niet; die mag van V<sub>Ed</sub> af (alleen binnen in de plaat). 0 is veilig. β volgt uit figuur 6.21N voor een plaat met ongeveer gelijke velden zonder grote momenten in de oplegging.</i><span class="alleen-scherm"></span>
+β = if(ligging ≡ 1; 1.15; if(ligging ≡ 2; 1.4; 1.5))', figuur 6.21N<span class="kolom-3"></span>'
+
+#hide
+'Steunvlak als afgeronde rechthoek: halve maten g_a (x) en g_b (y) en hoekstraal
+'g_r. Een rond steunvlak is g_a = g_b = 0 met g_r = D/2; een omtrek op afstand e
+'van het steunvlak heeft dezelfde g_a en g_b met straal g_r + e.
+g_a = if(vorm ≡ 1; 0 mm; c_1/2)
+g_b = if(vorm ≡ 1; 0 mm; c_2/2)
+g_r = if(vorm ≡ 1; D/2; 0 mm)
+'Omtrek op afstand e van het steunvlak, binnen (vrij), aan een rand (de vrije
+'rand langs de buitenkant van het steunvlak) en in een hoek (twee vrije randen).
+α_r(e) = acos(g_r/(g_r + e))
+u_rond(e) = (g_r + e)*if(ligging ≡ 1; 2*π; if(ligging ≡ 2; 2*π - 2*α_r(e); 2*π - if(α_r(e) ≤ π/4; 4*α_r(e); π/2 + 2*α_r(e))))
+u_rh(e) = if(ligging ≡ 1; 4*(g_a + g_b) + 2*π*e; if(ligging ≡ 2; 2*g_b + 4*g_a + π*e; 2*g_a + 2*g_b + π*e/2))
+u_e(e) = if(vorm ≡ 1; u_rond(e); u_rh(e))
+'u_0 volgens 6.4.5(3); een rond steunvlak aan een rand of in een hoek als vierkant met zijde D.
+u_0b = if(vorm ≡ 1; π*D; 2*(c_1 + c_2))
+u_0r = min(c_2 + 3*d; c_2 + 2*c_1)
+u_0h = min(3*d; c_1 + c_2)
+#show
+u_0 = if(ligging ≡ 1; u_0b; if(ligging ≡ 2; u_0r; u_0h)) to mm', omtrek steunvlak, 6.4.5(3)<span class="kolom-2"></span>'
+u_1 = u_e(2*d) to mm', basiscontroleomtrek op 2d, 6.4.2<span class="kolom-2"></span>'
+#hide
+A_1 = if(vorm ≡ 1; π*(D/2 + 2*d)^2; c_1*c_2 + 4*d*(c_1 + c_2) + 4*π*d^2)
+ΔV_Ed = if(ligging ≡ 1; q_Ed*A_1; 0 kN) to kN
+#show
+#if ΔV_Ed > 0 kN
+    ΔV_Ed', q<sub>Ed</sub>·A<sub>1</sub>, last binnen u<sub>1</sub><span class="kolom-2"></span>'
+#end if
+
+#hide
+'Tekeningen. Plattegrond: 1 mm is t_s px; het steunvlak in het midden, bij een
+'rand ligt de vrije rand links, bij een hoek ook boven. Doorsnede: 1 mm is t_d px.
+t_e1 = 2*d/(1 mm)
+t_ga = g_a/(1 mm)
+t_gb = g_b/(1 mm)
+t_gr = g_r/(1 mm)
+#show
+
+# Toetsing
+
+v_Ed,0 = β*V_Ed/(u_0*d) to N/mm^2', bij het steunvlak, (6.53)<span class="kolom-2"></span>'
+v_Rd,max = 0.4*0.6*(1 - f_ck/(250 N/mm^2))*f_cd', 6.4.5(3)<span class="kolom-2"></span>'
+v_Ed,1 = β*(V_Ed - ΔV_Ed)/(u_1*d) to N/mm^2', op u<sub>1</sub>, (6.38)<span class="kolom-2"></span>'
+v_min = 0.035*k^1.5*sqrt(f_ck/MPa)*MPa to N/mm^2', (6.3N)<span class="kolom-2"></span>'
+v_Rd,c = max(0.18/γ_c*k*(100*ρ_l*f_ck/MPa)^(1/3)*MPa; v_min) to N/mm^2', (6.47), zonder normaalspanning<span class="kolom-2"></span>'
+UC_0 = v_Ed,0/v_Rd,max'<span class="kolom-2"></span>'
+UC_1 = v_Ed,1/v_Rd,c', zonder ponswapening<span class="kolom-2"></span>'
+
+#hide
+'Ponswapening (6.52): staande staven of deuvels, s_r = 0,75·d, de eerste omtrek op
+'0,5·d van het steunvlak, de laatste niet verder dan 1,5·d binnen u_out (6.4.5(4)).
+s_r = 0.75*d
+f_ywd,ef = min(250 N/mm^2 + 0.25*d/(1 mm)*N/mm^2; f_yd)
+u_out = β*(V_Ed - ΔV_Ed)/(v_Rd,c*d) to mm
+a_out = $Find{u_e(a) - u_out @ a = 0.01 mm : 50*d}
+n_om = max(1; ceil((a_out - 2*d)/s_r) + 1)
+#show
+#if UC_0 > 1
+    '<span class="oordeel" style="color: #b91c1c"><b>Pons voldoet niet</b>: bij het steunvlak is v<sub>Ed</sub> groter dan v<sub>Rd,max</sub> (UC = 'UC_0'). Ponswapening helpt daar niet: maak de plaat dikker, het steunvlak groter of het beton sterker.</span>
+    #hide
+    A_sw = 0 mm^2
+    n_st = 0
+    #show
+#else if UC_1 ≤ 1
+    '<span class="oordeel" style="color: green"><b>Pons voldoet zonder ponswapening</b> (UC = 'max(UC_0; UC_1)').</span>
+    #hide
+    A_sw = 0 mm^2
+    n_st = 0
+    #show
+#else
+    '<h6>Ponswapening</h6>
+    ø_sw = ?{10}*(mm)', staaf of deuvel, Ø<span class="kolom-3"></span>'
+    s_r', radiale afstand, 0,75·d<span class="kolom-3"></span>'
+    f_ywd,ef', (6.52)<span class="kolom-3"></span>'
+    A_sw = (v_Ed,1 - 0.75*v_Rd,c)*u_1*s_r/(1.5*f_ywd,ef) to mm^2', per omtrek, uit (6.52)<span class="kolom-2"></span>'
+    A_st,min = 0.08*sqrt(f_ck/MPa)/(500 N/mm^2)*N/mm^2*s_r*d to mm^2', per staaf bij s<sub>t</sub> = 1,5·d, (9.11)<span class="kolom-2"></span>'
+    n_st = max(ceil(A_sw/(π*ø_sw^2/4)); ceil(u_1/(1.5*d)))', staven per omtrek, ook om de 1,5·d (9.4.3)<span class="kolom-2"></span>'
+    #if π*ø_sw^2/4 < A_st,min
+        '<span style="color: #b91c1c">Ø'ø_sw/mm' is dunner dan de minimumwapening per staaf (9.11): kies een dikkere staaf.</span>
+    #end if
+    u_out', geen wapening meer nodig, (6.54)<span class="kolom-3"></span>'
+    a_out', afstand tot het steunvlak<span class="kolom-3"></span>'
+    n_om', omtrekken: de eerste op 0,5·d, om de s<sub>r</sub><span class="kolom-3"></span>'
+    '<span class="oordeel" style="color: #b45309"><b>Pons voldoet met ponswapening</b>: 'n_om' omtrekken van 'n_st' × Ø'ø_sw/mm', de eerste op 0,5·d = 'round(0.5*d/(1 mm))' mm van het steunvlak, om de 'round(s_r/(1 mm))' mm.</span>
+#end if
+
+#hide
+'Omtrekken van de ponswapening voor de tekeningen (anders nul).
+t_n = if(UC_1 > 1; if(UC_0 ≤ 1; n_om; 0); 0)
+t_ao = if(t_n > 0; a_out/(1 mm); 0)
+t_R = t_ga + t_gb + t_gr + max(t_e1; t_ao)
+t_s = 120/max(t_ga; t_gb; t_R - t_ga - t_gb)
+t_cx = if(ligging ≡ 1; 240; 170)
+t_cy = if(ligging ≡ 3; 120; 145)
+t_xr = t_cx - (t_ga + t_gr)*t_s
+t_yr = t_cy - (t_gb + t_gr)*t_s
+'Omtrek op afstand e (mm) als afgeronde rechthoek in de plattegrond.
+t_ox(e) = t_cx - (t_ga + t_gr + e)*t_s
+t_oy(e) = t_cy - (t_gb + t_gr + e)*t_s
+t_ow(e) = 2*(t_ga + t_gr + e)*t_s
+t_oh(e) = 2*(t_gb + t_gr + e)*t_s
+t_or(e) = (t_gr + e)*t_s
+#show
+'<svg class="dxf" viewbox="0 0 480 300" xmlns="http://www.w3.org/2000/svg" style="font-size:10px; width:72%; max-height:420px;">
+'  <text x="12" y="14" style="fill:#64748b">Plattegrond</text>
+#if t_n > 0
+#for i = 1 : t_n
+'  <rect x="'t_ox(0.5*d/(1 mm) + (i - 1)*s_r/(1 mm))'" y="'t_oy(0.5*d/(1 mm) + (i - 1)*s_r/(1 mm))'" width="'t_ow(0.5*d/(1 mm) + (i - 1)*s_r/(1 mm))'" height="'t_oh(0.5*d/(1 mm) + (i - 1)*s_r/(1 mm))'" rx="'t_or(0.5*d/(1 mm) + (i - 1)*s_r/(1 mm))'" style="fill:none; stroke:#047857; stroke-width:1; stroke-dasharray:2 3"/>
+#loop
+#end if
+#if t_n > 0
+    '  <rect x="'t_ox(t_ao)'" y="'t_oy(t_ao)'" width="'t_ow(t_ao)'" height="'t_oh(t_ao)'" rx="'t_or(t_ao)'" style="fill:none; stroke:#1E40AF; stroke-width:1; stroke-dasharray:6 3"/>
+#end if
+'  <rect x="'t_ox(t_e1)'" y="'t_oy(t_e1)'" width="'t_ow(t_e1)'" height="'t_oh(t_e1)'" rx="'t_or(t_e1)'" style="fill:#dbeafe; fill-opacity:0.5; stroke:#1E40AF; stroke-width:1.6"/>
+#if ligging ≥ 2
+    '  <rect x="0" y="0" width="'t_xr'" height="300" style="fill:#e5e7eb"/>
+    '  <line x1="'t_xr'" y1="20" x2="'t_xr'" y2="300" style="stroke:#334155; stroke-width:2"/>
+    '  <text x="'t_xr - 6'" y="40" text-anchor="end" style="fill:#64748b">vrije rand</text>
+#end if
+#if ligging ≡ 3
+    '  <rect x="0" y="0" width="480" height="'t_yr'" style="fill:#e5e7eb"/>
+    '  <line x1="'t_xr'" y1="'t_yr'" x2="480" y2="'t_yr'" style="stroke:#334155; stroke-width:2"/>
+#end if
+'  <rect x="'t_ox(0)'" y="'t_oy(0)'" width="'t_ow(0)'" height="'t_oh(0)'" rx="'t_or(0)'" style="fill:#94a3b8; stroke:#b91c1c; stroke-width:2"/>
+'  <line x1="'t_cx + (t_ga + t_gr)*t_s'" y1="'t_cy'" x2="'t_cx + (t_ga + t_gr + t_e1)*t_s'" y2="'t_cy'" style="stroke:#1E40AF; stroke-width:0.9"/>
+'  <circle cx="'t_cx + (t_ga + t_gr)*t_s'" cy="'t_cy'" r="2" style="fill:#1E40AF"/>
+'  <circle cx="'t_cx + (t_ga + t_gr + t_e1)*t_s'" cy="'t_cy'" r="2" style="fill:#1E40AF"/>
+'  <text x="'t_cx + (t_ga + t_gr + t_e1/2)*t_s'" y="'t_cy - 5'" text-anchor="middle" style="fill:#1E40AF; font-weight:700">2d = 'round(2*d/(1 mm))'</text>
+#if vorm ≡ 1
+    '  <text x="'t_cx'" y="'t_cy + 4'" text-anchor="middle" style="fill:#ffffff; font-weight:700">Ø'D/(1 mm)'</text>
+#else
+    '  <text x="'t_cx'" y="'t_cy + 4'" text-anchor="middle" style="fill:#ffffff; font-weight:700">'c_1/(1 mm)' × 'c_2/(1 mm)'</text>
+#end if
+'  <text x="'t_cx + (t_ga + t_gr + t_e1)*t_s*0.72'" y="'t_cy + (t_gb + t_gr + t_e1)*t_s + 14'" style="fill:#1E40AF; font-weight:700">u<tspan dy="2.5" font-size="8">1</tspan><tspan dy="-2.5"> = 'round(u_1/(1 mm))' mm</tspan></text>
+#if t_n > 0
+    '  <text x="'t_cx + (t_ga + t_gr + t_ao)*t_s*0.72'" y="'t_cy + (t_gb + t_gr + t_ao)*t_s + 12'" style="fill:#1E40AF">u<tspan dy="2.5" font-size="8">out</tspan><tspan dy="-2.5"> = 'round(u_out/(1 mm))' mm</tspan></text>
+#end if
+'  <line x1="12" y1="268" x2="24" y2="268" style="stroke:#b91c1c; stroke-width:2"/><text x="28" y="271" style="fill:#334155">u<tspan dy="2.5" font-size="8">0</tspan><tspan dy="-2.5"> = 'round(u_0/(1 mm))' mm</tspan></text>
+'  <line x1="12" y1="283" x2="24" y2="283" style="stroke:#1E40AF; stroke-width:1.6"/><text x="28" y="286" style="fill:#334155">u<tspan dy="2.5" font-size="8">1</tspan><tspan dy="-2.5"> op 2d</tspan></text>
+#if t_n > 0
+    '  <line x1="120" y1="268" x2="132" y2="268" style="stroke:#047857; stroke-width:1; stroke-dasharray:2 3"/><text x="136" y="271" style="fill:#334155">omtrekken ponswapening</text>
+    '  <line x1="120" y1="283" x2="132" y2="283" style="stroke:#1E40AF; stroke-width:1; stroke-dasharray:6 3"/><text x="136" y="286" style="fill:#334155">u<tspan dy="2.5" font-size="8">out</tspan></text>
+#end if
+'</svg>'
+
+#hide
+'Doorsnede door het midden van het steunvlak.
+t_d = 360/(2*(t_ga + t_gr + max(t_e1; t_ao)) + 200)
+t_y1 = 46
+t_hh = h/(1 mm)*t_d
+t_y2 = t_y1 + t_hh
+t_ws = (t_ga + t_gr)*t_d
+t_dd = d/(1 mm)*t_d
+t_xa = 240 - (t_ga + t_gr + max(t_e1; t_ao))*t_d - 100*t_d
+t_xb = 240 + (t_ga + t_gr + max(t_e1; t_ao))*t_d + 100*t_d
+#show
+'<svg class="dxf" viewbox="0 0 480 205" xmlns="http://www.w3.org/2000/svg" style="font-size:10px; width:72%; max-height:290px;">
+'  <text x="12" y="14" style="fill:#64748b">Doorsnede</text>
+'  <rect x="'t_xa'" y="'t_y1'" width="'t_xb - t_xa'" height="'t_hh'" style="fill:#e5e7eb; stroke:#334155; stroke-width:1.2"/>
+'  <rect x="'240 - t_ws'" y="'t_y2'" width="'2*t_ws'" height="70" style="fill:#94a3b8; stroke:#334155; stroke-width:1.2"/>
+'  <line x1="'t_xa + 4'" y1="'t_y1 + (c_nom + ø_x/2)/(1 mm)*t_d'" x2="'t_xb - 4'" y2="'t_y1 + (c_nom + ø_x/2)/(1 mm)*t_d'" style="stroke:#b45309; stroke-width:1.6"/>
+'  <line x1="'240 - t_ws'" y1="'t_y2'" x2="'240 - t_ws - t_e1*t_d'" y2="'t_y2 - t_dd'" style="stroke:#b91c1c; stroke-width:1.2; stroke-dasharray:4 2"/>
+'  <line x1="'240 + t_ws'" y1="'t_y2'" x2="'240 + t_ws + t_e1*t_d'" y2="'t_y2 - t_dd'" style="stroke:#b91c1c; stroke-width:1.2; stroke-dasharray:4 2"/>
+'  <text x="'240 + t_ws + t_e1*t_d*0.45'" y="'t_y2 - 4'" style="fill:#b91c1c; font-size:9px">26,6°</text>
+#if t_n > 0
+#for i = 1 : t_n
+'  <line x1="'240 + t_ws + (0.5*d/(1 mm) + (i - 1)*s_r/(1 mm))*t_d'" y1="'t_y1 + 6'" x2="'240 + t_ws + (0.5*d/(1 mm) + (i - 1)*s_r/(1 mm))*t_d'" y2="'t_y2 - 6'" style="stroke:#047857; stroke-width:2"/>
+'  <line x1="'240 - t_ws - (0.5*d/(1 mm) + (i - 1)*s_r/(1 mm))*t_d'" y1="'t_y1 + 6'" x2="'240 - t_ws - (0.5*d/(1 mm) + (i - 1)*s_r/(1 mm))*t_d'" y2="'t_y2 - 6'" style="stroke:#047857; stroke-width:2"/>
+#loop
+#end if
+'  <line x1="240" y1="'t_y2 + 108'" x2="240" y2="'t_y2 + 76'" style="stroke:#b91c1c; stroke-width:2.6"/>
+'  <polygon points="240,'t_y2 + 72' 234.5,'t_y2 + 84' 245.5,'t_y2 + 84'" style="fill:#b91c1c"/>
+'  <text x="250" y="'t_y2 + 100'" style="fill:#b91c1c; font-weight:700">V<tspan dy="2.5" font-size="8">Ed</tspan><tspan dy="-2.5"> = 'V_Ed/kN' kN</tspan></text>
+'  <line x1="'t_xa - 10'" y1="'t_y1'" x2="'t_xa - 10'" y2="'t_y2'" style="stroke:#1E40AF; stroke-width:0.8"/>
+'  <text x="'t_xa - 14'" y="'t_y1 + t_hh/2 + 3'" text-anchor="end" style="fill:#1E40AF">h = 'h/mm'</text>
+'  <line x1="'t_xb + 10'" y1="'t_y2'" x2="'t_xb + 10'" y2="'t_y2 - t_dd'" style="stroke:#1E40AF; stroke-width:0.8"/>
+'  <text x="'t_xb + 14'" y="'t_y2 - t_dd/2 + 3'" style="fill:#1E40AF">d = 'round(d/(1 mm))'</text>
+'  <line x1="'240 + t_ws'" y1="'t_y1 - 10'" x2="'240 + t_ws + t_e1*t_d'" y2="'t_y1 - 10'" style="stroke:#1E40AF; stroke-width:0.8"/>
+'  <circle cx="'240 + t_ws'" cy="'t_y1 - 10'" r="2" style="fill:#1E40AF"/><circle cx="'240 + t_ws + t_e1*t_d'" cy="'t_y1 - 10'" r="2" style="fill:#1E40AF"/>
+'  <text x="'240 + t_ws + t_e1*t_d/2'" y="'t_y1 - 14'" text-anchor="middle" style="fill:#1E40AF">2d = 'round(2*d/(1 mm))'</text>
+'  <line x1="'240 - t_ws'" y1="'t_y2 + 62'" x2="'240 + t_ws'" y2="'t_y2 + 62'" style="stroke:#1E40AF; stroke-width:0.8"/>
+'  <text x="'240 - t_ws - 4'" y="'t_y2 + 65'" text-anchor="end" style="fill:#1E40AF">breedte 'c_1/(1 mm)'</text>
+'  <text x="'t_xa + 4'" y="'t_y1 + (c_nom + ø_x/2)/(1 mm)*t_d - 4'" style="fill:#b45309; font-size:9px">Ø'ø_x/mm'-'s_x/mm' / Ø'ø_y/mm'-'s_y/mm'</text>
+'</svg>'
+
+#hide
+'3D: een stuk plaat rond het steunvlak, de omtrek u_1 op de hoogte van de
+'wapening, de pons-kegel en zo nodig de staven van de ponswapening. Punten van
+'een afgeronde rechthoek: 4 bogen van 8 stukken (36 punten), k = 0 … 35.
+r_q(k) = floor(mod(k; 36)/9)
+r_t(k) = (r_q(k)*90 + mod(mod(k; 36); 9)*11.25)*π/180
+r_sx(k) = if(r_q(k) ≡ 0; 1; if(r_q(k) ≡ 3; 1; -1))
+r_sy(k) = if(r_q(k) ≤ 1; 1; -1)
+o_x(k; e) = r_sx(k)*g_a + (g_r + e)*cos(r_t(k))
+o_y(k; e) = r_sy(k)*g_b + (g_r + e)*sin(r_t(k))
+'Op de plaat: binnen; aan een rand x ≥ −(g_a + g_r); in een hoek ook y ≥ −(g_b + g_r).
+o_in(k; e) = bool(o_x(k; e) ≥ -(g_a + g_r) - 0.1 mm)*bool(ligging ≥ 2) + bool(ligging ≡ 1)
+o_ok(k; e) = if(ligging ≡ 3; o_in(k; e)*bool(o_y(k; e) ≥ -(g_b + g_r) - 0.1 mm); o_in(k; e))
+p_L = g_a + g_r + max(2*d; t_ao*1 mm) + d
+p_x0 = if(ligging ≥ 2; -(g_a + g_r); -p_L)
+p_y0 = if(ligging ≡ 3; -(g_b + g_r); -(g_b + g_r) - max(2*d; t_ao*1 mm) - d)
+p_lx = p_L - p_x0
+p_ly = g_b + g_r + max(2*d; t_ao*1 mm) + d - p_y0
+#show
+@3d
+camera iso
+hoogte 360
+raster uit
+assen uit
+// de plaat als draadmodel, zodat de kegel, u1 en de ponswapening erin zichtbaar blijven, ook op papier
+staaf {{p_x0}} {{p_y0}} 0 {{p_x0 + p_lx}} {{p_y0}} 0 grijs
+staaf {{p_x0 + p_lx}} {{p_y0}} 0 {{p_x0 + p_lx}} {{p_y0 + p_ly}} 0 grijs
+staaf {{p_x0 + p_lx}} {{p_y0 + p_ly}} 0 {{p_x0}} {{p_y0 + p_ly}} 0 grijs
+staaf {{p_x0}} {{p_y0 + p_ly}} 0 {{p_x0}} {{p_y0}} 0 grijs
+staaf {{p_x0}} {{p_y0}} {{h}} {{p_x0 + p_lx}} {{p_y0}} {{h}} grijs
+staaf {{p_x0 + p_lx}} {{p_y0}} {{h}} {{p_x0 + p_lx}} {{p_y0 + p_ly}} {{h}} grijs
+staaf {{p_x0 + p_lx}} {{p_y0 + p_ly}} {{h}} {{p_x0}} {{p_y0 + p_ly}} {{h}} grijs
+staaf {{p_x0}} {{p_y0 + p_ly}} {{h}} {{p_x0}} {{p_y0}} {{h}} grijs
+staaf {{p_x0}} {{p_y0}} 0 {{p_x0}} {{p_y0}} {{h}} grijs
+staaf {{p_x0 + p_lx}} {{p_y0}} 0 {{p_x0 + p_lx}} {{p_y0}} {{h}} grijs
+staaf {{p_x0 + p_lx}} {{p_y0 + p_ly}} 0 {{p_x0 + p_lx}} {{p_y0 + p_ly}} {{h}} grijs
+staaf {{p_x0}} {{p_y0 + p_ly}} 0 {{p_x0}} {{p_y0 + p_ly}} {{h}} grijs
+#if vorm ≡ 1
+buis 0 0 -1200 0 0 0 {{D}} beton
+#else
+kolom 0 0 -1200 0 {{c_2}} {{c_1}} beton
+#end if
+#for k = 0 : 35
+#if o_ok(k; 2*d)*o_ok(k + 1; 2*d)*max(bool(mod(k; 9) < 8); bool(vorm ≡ 2)) ≡ 1
+staaf {{o_x(k; 2*d)}} {{o_y(k; 2*d)}} {{h + 5}} {{o_x(k + 1; 2*d)}} {{o_y(k + 1; 2*d)}} {{h + 5}} blauw
+#end if
+#loop
+#for k = 0 : 11
+#if o_ok(3*k; 2*d) ≡ 1
+staaf {{o_x(3*k; 0 mm)}} {{o_y(3*k; 0 mm)}} 0 {{o_x(3*k; 2*d)}} {{o_y(3*k; 2*d)}} {{d}} rood
+#end if
+#loop
+#if t_n > 0
+#for i = 1 : t_n
+#for k = 0 : 17
+#if o_ok(2*k; 0.5*d + (i - 1)*s_r) ≡ 1
+staaf {{o_x(2*k; 0.5*d + (i - 1)*s_r)}} {{o_y(2*k; 0.5*d + (i - 1)*s_r)}} {{c_nom}} {{o_x(2*k; 0.5*d + (i - 1)*s_r)}} {{o_y(2*k; 0.5*d + (i - 1)*s_r)}} {{h - c_nom}} groen
+#end if
+#loop
+#loop
+#end if
+pijl 0 0 -1900 0 0 -1250
+tekst 0 0 -2000 "V_Ed = {{V_Ed}} kN"
+tekst {{g_a + g_r + 2*d}} 0 {{h + 120}} "u1 = {{round(u_1/(1 mm))}} mm"
+tekst {{p_x0}} {{p_y0 + p_ly}} {{h + 60}} "h = {{h}} mm, d = {{round(d/(1 mm))}} mm"
+@end
+
+# Samenvatting
+
+#hide
+c_1k = "#b91c1c"
+c_2k = "#b45309"
+c_3k = "#047857"
+kleur(u) = if(u > 1; c_1k; if(u > 0.9; c_2k; c_3k))
+#show
+'<table style="width:100%; border-collapse:collapse; font-size:0.95em;">
+'<tr style="border-bottom:2px solid #374151;"><th style="text-align:left; padding:2px 8px;">Toets</th><th style="text-align:left; padding:2px 8px;">Norm</th><th style="text-align:right; padding:2px 8px;">UC</th><th style="text-align:left; padding:2px 8px;"></th></tr>
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Bij het steunvlak, u<sub>0</sub></td><td style="padding:2px 8px;">6.4.5(3)</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_0)'">'UC_0'</td><td style="padding:2px 8px; color:'kleur(UC_0)'">'if(UC_0 ≤ 1; "voldoet"; "voldoet niet")'</td></tr>
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Op u<sub>1</sub> zonder ponswapening</td><td style="padding:2px 8px;">6.4.4</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_1)'">'UC_1'</td><td style="padding:2px 8px; color:'kleur(UC_1)'">'if(UC_1 ≤ 1; "voldoet"; if(UC_0 ≤ 1; "ponswapening nodig"; "voldoet niet"))'</td></tr>
+'</table>

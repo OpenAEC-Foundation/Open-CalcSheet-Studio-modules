@@ -26,6 +26,28 @@
       "minimaleAppVersie": "2026.44.0"
     },
     {
+      "id": "pons",
+      "versie": "2026.45.0",
+      "naam": {
+        "nl": "Pons (plaat op kolom of paal)",
+        "en": "Punching shear (slab on column or pile)"
+      },
+      "omschrijving": {
+        "nl": "Pons rond een ronde of rechthoekige oplegging, binnen, aan een rand of in een hoek: u0 en u1 op 2d, v_Rd,c en v_Rd,max, en bij een tekort de ponswapening met u_out. Met plattegrond, doorsnede en 3D-beeld met maten.",
+        "en": "Punching shear around a round or rectangular support, interior, edge or corner: u0 and u1 at 2d, v_Rd,c and v_Rd,max, and where needed punching reinforcement with u_out. With plan, section and 3D view with dimensions."
+      },
+      "categorie": "beton",
+      "status": "concept",
+      "gepubliceerd": false,
+      "normen": [
+        "NEN-EN 1992-1-1 + NB"
+      ],
+      "map": "modules/pons",
+      "blad": "pons.cpd",
+      "beeld": "beeld.webp",
+      "minimaleAppVersie": "2026.45.2"
+    },
+    {
       "id": "vloer-op-grondslag",
       "versie": "2026.45.0",
       "naam": {
