@@ -16,6 +16,7 @@ modules through its extension manager. Contributions are welcome — see
 | [Balklaag (houten vloerbalken)](modules/balklaag) | NEN-EN 1995-1-1 + NB | gereed |
 | [Bedrijfsvloer op grondslag (puntlasten)](modules/vloer-op-grondslag) | CUR-Aanbeveling 36, NEN-EN 1992-1-1 + NB | concept |
 | [Pons (plaat op kolom of paal)](modules/pons) | NEN-EN 1992-1-1 + NB | concept |
+| [Bedrijfsvloer op palen (FEM, schaakbord, krimp)](modules/vloer-op-palen) | NEN-EN 1992-1-1 + NB, NEN-EN 1992-3 | concept |
 
 ## Opbouw
 

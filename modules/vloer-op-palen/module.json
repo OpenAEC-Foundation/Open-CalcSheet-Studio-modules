@@ -1,0 +1,27 @@
+{
+  "id": "vloer-op-palen",
+  "versie": "2026.45.0",
+  "naam": {
+    "nl": "Bedrijfsvloer op palen (FEM, schaakbord, krimp)",
+    "en": "Pile-supported industrial floor (FEM, pattern loading, shrinkage)"
+  },
+  "omschrijving": {
+    "nl": "Betonvloer op verende palen in een raster: een stuk van 4 × 4 velden met plaatelementen (DKT) voor volle belasting en schaakbord, wapening onder en boven (kolomstrook), de paalreactie voor de pons, en krimp met het cementgehalte, de beweging over de vloerlengte en de wapening tegen scheuren. Met plattegrond, momentenbeeld en 3D-doorbuiging.",
+    "en": "Concrete floor on elastic piles in a grid: a 4 × 4 bay patch with plate elements (DKT) for full and pattern loading, bottom and top reinforcement (column strip), the pile reaction for punching, and shrinkage with the cement content, movement over the floor length and crack control reinforcement. With plan, moment plot and 3D deflection."
+  },
+  "categorie": "beton",
+  "status": "concept",
+  "gepubliceerd": false,
+  "normen": [
+    "NEN-EN 1990 + NB",
+    "NEN-EN 1991-1-1 + NB",
+    "NEN-EN 1992-1-1 + NB",
+    "NEN-EN 1992-3",
+    "ACI 209R-92"
+  ],
+  "blad": "vloer-op-palen.cpd",
+  "beeld": "beeld.webp",
+  "minimaleAppVersie": "2026.46.0",
+  "auteurs": ["OpenAEC Foundation"],
+  "licentie": "LGPL-3.0-or-later"
+}
