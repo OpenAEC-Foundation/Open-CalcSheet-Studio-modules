@@ -111,6 +111,94 @@ F_Ed,p', poot<span class="kolom-3"></span>'
 '<i>Westergaard geeft het grootste moment in de plaat, recht onder de last. Bij een strook wordt de last verdeeld over een strook van b<sub>str</sub> breed die als ligger op veren werkt, met de stijfheid van de plaat; de rand en de hoek blijven volgens Westergaard.</i><span class="alleen-scherm"></span>
 
 #hide
+'Plattegrond, schematisch: 1 m is 50 px. De stelling staat langs de wand met
+'een diepte van 1,1 m; de haspel op de vloer is 1,2 m hoog en 1,0 m breed, de
+'heftruck 1,2 m breed en 2,6 m lang. Die maten zijn alleen voor de schets. De
+'klasse dxf geeft de tekening op papier de hoogte van een plattegrond (tot 140 mm)
+'in plaats van de 150 px van een gewone tekening in een blad.
+p_sc = 0.05
+p_m(x) = x/(1 mm)*p_sc
+p_n = min(4; floor(420/max(p_m(s_p); 1)) + 1)
+p_vy = 34
+p_dy = 55
+p_hx = 100
+p_hy = 205
+p_tx = 300
+p_ty = 158
+p_wx = p_tx - p_m(s_w)/2
+p_bw = max(3; p_m(b_w))
+p_lw = max(3; p_m(l_w))
+p_wy = p_ty + 2 + p_lw/2
+p_bh = max(2; p_m(b_h))
+p_lh = max(3; p_m(l_h))
+p_bp = max(3; p_m(b_p))
+p_lp = max(3; p_m(l_p))
+p_st = p_m(b_str)
+p_L = p_m(1.4*l)
+#show
+'<svg class="dxf" viewbox="0 0 480 312" xmlns="http://www.w3.org/2000/svg" style="font-size:10px; width:72%; max-height:437px;">
+'  <text x="12" y="12" style="fill:#64748b">Plattegrond, schematisch</text>
+'  <!-- wand -->
+'  <line x1="12" y1="'p_vy - 6'" x2="468" y2="'p_vy - 6'" style="stroke:#334155; stroke-width:3"/>
+#for i = 0 : 37
+'  <line x1="'14 + i*12'" y1="'p_vy - 7'" x2="'8 + i*12'" y2="'p_vy - 15'" style="stroke:#334155; stroke-width:0.7"/>
+#loop
+'  <!-- stelling: staanders met voetplaten, liggers, per vak een haspel -->
+'  <line x1="40" y1="'p_vy'" x2="'40 + (p_n - 1)*p_m(s_p)'" y2="'p_vy'" style="stroke:#94a3b8; stroke-width:1.2"/>
+'  <line x1="40" y1="'p_vy + p_dy'" x2="'40 + (p_n - 1)*p_m(s_p)'" y2="'p_vy + p_dy'" style="stroke:#94a3b8; stroke-width:1.2"/>
+#for i = 0 : p_n - 2
+'  <rect x="'48 + i*p_m(s_p)'" y="'p_vy + 6'" width="'p_m(s_p) - 16'" height="'p_dy - 12'" rx="4" style="fill:#e0e7ff; stroke:#6366f1; stroke-width:0.8"/>
+'  <text x="'40 + (i + 0.5)*p_m(s_p)'" y="'p_vy + p_dy/2 + 3'" text-anchor="middle" style="fill:#4338ca; font-size:9px">haspel(s)</text>
+#loop
+#for i = 0 : p_n - 1
+'  <line x1="'40 + i*p_m(s_p)'" y1="'p_vy'" x2="'40 + i*p_m(s_p)'" y2="'p_vy + p_dy'" style="stroke:#475569; stroke-width:1.6"/>
+'  <rect x="'40 + i*p_m(s_p) - p_bp/2'" y="'p_vy - p_lp/2'" width="'p_bp'" height="'p_lp'" style="fill:#B91C1C"/>
+'  <rect x="'40 + i*p_m(s_p) - p_bp/2'" y="'p_vy + p_dy - p_lp/2'" width="'p_bp'" height="'p_lp'" style="fill:#B91C1C"/>
+#loop
+'  <line x1="40" y1="'p_vy + p_dy + 14'" x2="'40 + p_m(s_p)'" y2="'p_vy + p_dy + 14'" style="stroke:#1E40AF; stroke-width:0.8"/>
+'  <circle cx="40" cy="'p_vy + p_dy + 14'" r="2" style="fill:#1E40AF"/>
+'  <circle cx="'40 + p_m(s_p)'" cy="'p_vy + p_dy + 14'" r="2" style="fill:#1E40AF"/>
+'  <text x="'40 + p_m(s_p)/2'" y="'p_vy + p_dy + 26'" text-anchor="middle" style="fill:#1E40AF">'s_p/mm'</text>
+'  <text x="'50 + p_m(s_p)'" y="'p_vy + p_dy + 17'" style="fill:#334155">stelling: 'F_p/kN' kN per poot, voetplaat 'b_p/mm' × 'l_p/mm' mm</text>
+'  <!-- haspel los op de vloer, op twee flenzen -->
+'  <rect x="'p_hx - 30'" y="'p_hy - 25'" width="60" height="50" rx="3" style="fill:#fef3c7; stroke:#b45309; stroke-width:1"/>
+'  <line x1="'p_hx - 30'" y1="'p_hy - 21'" x2="'p_hx + 30'" y2="'p_hy - 21'" style="stroke:#b45309; stroke-width:1.6"/>
+'  <line x1="'p_hx - 30'" y1="'p_hy + 21'" x2="'p_hx + 30'" y2="'p_hy + 21'" style="stroke:#b45309; stroke-width:1.6"/>
+'  <rect x="'p_hx - p_lh/2'" y="'p_hy - 21 - p_bh/2'" width="'p_lh'" height="'p_bh'" style="fill:#B91C1C"/>
+'  <rect x="'p_hx - p_lh/2'" y="'p_hy + 21 - p_bh/2'" width="'p_lh'" height="'p_bh'" style="fill:#B91C1C"/>
+'  <text x="'p_hx'" y="'p_hy + 3'" text-anchor="middle" style="fill:#92400e">haspel</text>
+'  <text x="'p_hx'" y="'p_hy + 40'" text-anchor="middle" style="fill:#334155">haspel op de vloer: 2 × 'F_h/kN' kN</text>
+'  <text x="'p_hx'" y="'p_hy + 52'" text-anchor="middle" style="fill:#334155">per flens 'b_h/mm' × 'l_h/mm' mm</text>
+#if methode ≡ 2
+    '  <!-- strook rond het linker voorwiel, in beide richtingen -->
+    '  <rect x="'p_wx - p_L'" y="'p_wy - p_st/2'" width="'2*p_L'" height="'p_st'" style="fill:#3b82f6; fill-opacity:0.10; stroke:#1E40AF; stroke-width:0.6; stroke-dasharray:3 2"/>
+    '  <rect x="'p_wx - p_st/2'" y="'p_wy - p_L'" width="'p_st'" height="'2*p_L'" style="fill:#3b82f6; fill-opacity:0.10; stroke:#1E40AF; stroke-width:0.6; stroke-dasharray:3 2"/>
+    '  <text x="'p_wx - p_L - 4'" y="'p_wy - 2'" text-anchor="end" style="fill:#1E40AF">strook 'b_str/mm' mm</text>
+    '  <text x="'p_wx - p_L - 4'" y="'p_wy + 10'" text-anchor="end" style="fill:#1E40AF">in beide richtingen</text>
+#end if
+'  <!-- heftruck: vorken, mast, vooras met twee wielen, achteras -->
+'  <line x1="'p_tx - 14'" y1="'p_ty - 30'" x2="'p_tx - 14'" y2="'p_ty - 6'" style="stroke:#475569; stroke-width:2.2"/>
+'  <line x1="'p_tx + 14'" y1="'p_ty - 30'" x2="'p_tx + 14'" y2="'p_ty - 6'" style="stroke:#475569; stroke-width:2.2"/>
+'  <rect x="'p_tx - 30'" y="'p_ty - 6'" width="60" height="6" style="fill:#475569"/>
+'  <rect x="'p_tx - 30'" y="'p_ty'" width="60" height="124" rx="6" style="fill:#fde68a; fill-opacity:0.6; stroke:#92400e; stroke-width:1"/>
+'  <rect x="'p_wx - p_bw/2'" y="'p_ty + 2'" width="'p_bw'" height="'p_lw'" style="fill:#B91C1C"/>
+'  <rect x="'p_tx + p_m(s_w)/2 - p_bw/2'" y="'p_ty + 2'" width="'p_bw'" height="'p_lw'" style="fill:#B91C1C"/>
+'  <rect x="'p_tx - 24'" y="'p_ty + 100'" width="8" height="14" style="fill:none; stroke:#475569; stroke-width:1"/>
+'  <rect x="'p_tx + 16'" y="'p_ty + 100'" width="8" height="14" style="fill:none; stroke:#475569; stroke-width:1"/>
+'  <text x="'p_tx'" y="'p_ty + 60'" text-anchor="middle" style="fill:#92400e">heftruck</text>
+'  <text x="'p_tx + 38'" y="'p_ty + 8'" style="fill:#334155">vooras 'F_as/kN' kN:</text>
+'  <text x="'p_tx + 38'" y="'p_ty + 20'" style="fill:#334155">2 wielen h.o.h. 's_w/mm' mm,</text>
+'  <text x="'p_tx + 38'" y="'p_ty + 32'" style="fill:#334155">contact 'b_w/mm' × 'l_w/mm' mm</text>
+'  <!-- schaal -->
+'  <line x1="12" y1="300" x2="62" y2="300" style="stroke:#334155; stroke-width:1.4"/>
+'  <line x1="12" y1="296" x2="12" y2="304" style="stroke:#334155; stroke-width:1"/>
+'  <line x1="62" y1="296" x2="62" y2="304" style="stroke:#334155; stroke-width:1"/>
+'  <text x="68" y="303" style="fill:#334155">1 m</text>
+'  <rect x="380" y="292" width="8" height="8" style="fill:#B91C1C"/>
+'  <text x="392" y="300" style="fill:#334155">contactvlak</text>
+'</svg>'
+
+#hide
 'Spreiding van het wiel over de ondergrond: doorbuiging en gronddruk onder
 'een puntlast op een oneindige plaat op veren, w_max = F/(8·√(k·D)).
 D_pl = E_cm*h^3/(12*(1 - ν^2))
@@ -135,7 +223,7 @@ t_p(x) = t_p0*max(0; vorm((x - 240)/t_l))
 t_o(x) = t_yt + t_h + t_w(x)
 t_st(x) = (t_yg - t_o(x) - 8)/7
 #show
-'<svg viewbox="0 0 480 't_yd + 26'" xmlns="http://www.w3.org/2000/svg" style="font-size:11px; width:100%; max-height:'1.4*(t_yd + 26)'px;">
+'<svg class="dxf" viewbox="0 0 480 't_yd + 26'" xmlns="http://www.w3.org/2000/svg" style="font-size:11px; width:72%; max-height:'1.4*(t_yd + 26)'px;">
 '  <text x="20" y="14" style="fill:#64748b">Vloer op veren (Winkler), doorbuiging overdreven</text>
 '  <rect x="20" y="'t_yt'" width="440" height="'t_h'" style="fill:none; stroke:#94a3b8; stroke-width:0.8; stroke-dasharray:4 3"/>
 #for i = 0 : 21
@@ -307,8 +395,8 @@ s_b = ?{110}*(mm)', h.o.h.<span class="kolom-4"></span>'
 s_o = ?{150}*(mm)', h.o.h.<span class="kolom-4"></span>'
 #hide
 f_yd = 500 N/mm^2/1.15
-d_b = h - c_nom - max(ø_b; 10 mm)/2
-d_o = h - c_nom - max(ø_o; 10 mm)/2
+d_b = h - c_nom - if(ø_b > 0 mm; ø_b; 10 mm)/2
+d_o = h - c_nom - if(ø_o > 0 mm; ø_o; 10 mm)/2
 A_s,b = π*ø_b^2/4*b_s/s_b to mm^2
 A_s,o = π*ø_o^2/4*b_s/s_o to mm^2
 A_s,b,nodig = M_Ed,b/(f_yd*0.9*d_b) to mm^2
