@@ -1,0 +1,173 @@
+{
+  "toelichting": "Varianten die scripts/controleer.mjs doorrekent met de vastgelegde antwoorden van Open FEM Studio (test/<naam>.json.gz, opnieuw te maken met node scripts/fem-antwoorden.mjs --app <pad>). Verwacht: [waarde, eenheid, relatieve tolerantie (standaard 0,002)].",
+  "varianten": [
+    {
+      "naam": "vlak",
+      "omschrijving": "vlakke plaat, de standaardinvoer",
+      "invoer": {},
+      "verwacht": {
+        "o_1": [17.824, "kN"],
+        "o_2": [22.741, "kN"],
+        "o_3": [44.764, "kN"],
+        "o_4": [45.757, "kN"],
+        "b_6": [16.226, "kN"],
+        "b_7": [56.602, "kN"],
+        "b_8": [52.484, "kN"],
+        "m_piek": [87.336, "kN"],
+        "R_binnen": [568.4, "kN"],
+        "R_rand": [283.2, "kN"],
+        "R_hoek": [142.6, "kN"],
+        "w_BGT": [3.0765, "mm"],
+        "l_bx": [2, "m"],
+        "UC_o": [0.7678],
+        "UC_b": [0.555],
+        "stat_v": [1, "", 0.025],
+        "stat_b": [1, "", 0.05]
+      }
+    },
+    {
+      "naam": "ponskop",
+      "omschrijving": "met een ponskop boven elke paal",
+      "invoer": {
+        "ponskop": "1"
+      },
+      "verwacht": {
+        "o_1": [14.358, "kN"],
+        "o_2": [16.45, "kN"],
+        "o_3": [42.048, "kN"],
+        "o_4": [43.24, "kN"],
+        "b_6": [13.44, "kN"],
+        "b_7": [31.382, "kN"],
+        "b_8": [25.159, "kN"],
+        "b_9": [107.29, "kN"],
+        "m_piek": [115.44, "kN"],
+        "R_binnen": [582.74, "kN"],
+        "R_rand": [286.92, "kN"],
+        "R_hoek": [139.98, "kN"],
+        "w_BGT": [2.9368, "mm"],
+        "l_bx": [2, "m"],
+        "UC_o": [0.7255],
+        "UC_b": [0.6062],
+        "stat_v": [1, "", 0.025],
+        "stat_b": [1, "", 0.05]
+      }
+    },
+    {
+      "naam": "stroken",
+      "omschrijving": "met stroken in x en y",
+      "invoer": {
+        "stroken": "3"
+      },
+      "verwacht": {
+        "o_1": [13.201, "kN"],
+        "o_2": [13.319, "kN"],
+        "o_3": [30.985, "kN"],
+        "o_4": [29.505, "kN"],
+        "o_5": [86.128, "kN"],
+        "b_6": [17.881, "kN"],
+        "b_7": [45.866, "kN"],
+        "b_8": [35.791, "kN"],
+        "b_10": [93.181, "kN"],
+        "m_piek": [104.8, "kN"],
+        "R_binnen": [575.34, "kN"],
+        "R_rand": [295.65, "kN"],
+        "R_hoek": [145.2, "kN"],
+        "w_BGT": [2.9518, "mm"],
+        "l_bx": [2, "m"],
+        "UC_o": [0.5199],
+        "UC_b": [0.6131],
+        "stat_v": [1, "", 0.025],
+        "stat_b": [1, "", 0.05]
+      }
+    },
+    {
+      "naam": "alles",
+      "omschrijving": "ponskop, stroken in x en y en ponswapening in beeld",
+      "invoer": {
+        "ponskop": "1",
+        "stroken": "3",
+        "ponswap": "1"
+      },
+      "verwacht": {
+        "o_1": [12.201, "kN"],
+        "o_2": [11.835, "kN"],
+        "o_3": [30.741, "kN"],
+        "o_4": [29.209, "kN"],
+        "o_5": [84.497, "kN"],
+        "b_6": [17.256, "kN"],
+        "b_7": [36.99, "kN"],
+        "b_8": [28.142, "kN"],
+        "b_9": [96.876, "kN"],
+        "b_10": [47.25, "kN"],
+        "m_piek": [114.23, "kN"],
+        "R_binnen": [578.71, "kN"],
+        "R_rand": [296.96, "kN"],
+        "R_hoek": [144.37, "kN"],
+        "w_BGT": [2.9309, "mm"],
+        "l_bx": [2.4, "m"],
+        "UC_o": [0.5158],
+        "UC_b": [0.5474],
+        "stat_v": [1, "", 0.025],
+        "stat_b": [1, "", 0.05]
+      }
+    },
+    {
+      "naam": "rechthoekig",
+      "omschrijving": "3 × 3 velden van 4,2 × 3,0 m, stroken in x en ponswapening in beeld",
+      "invoer": {
+        "L_x": "4.2",
+        "L_y": "3.0",
+        "n_v": "3",
+        "stroken": "1",
+        "ponswap": "1"
+      },
+      "verwacht": {
+        "o_1": [19.979, "kN"],
+        "o_2": [20.465, "kN"],
+        "o_3": [40.495, "kN"],
+        "o_4": [36.421, "kN"],
+        "o_5": [106.24, "kN"],
+        "b_6": [20.024, "kN"],
+        "b_7": [31.989, "kN"],
+        "b_8": [31.989, "kN"],
+        "b_10": [120.43, "kN"],
+        "m_piek": [129.59, "kN"],
+        "R_binnen": [570.89, "kN"],
+        "R_rand": [303.87, "kN"],
+        "R_hoek": [139.87, "kN"],
+        "w_BGT": [3.1159, "mm"],
+        "l_bx": [2.5, "m"],
+        "UC_o": [0.6795],
+        "UC_b": [0.7924],
+        "stat_v": [1, "", 0.025],
+        "stat_b": [1, "", 0.05]
+      }
+    },
+    {
+      "naam": "vergelijking",
+      "omschrijving": "vlakke plaat met de buitenste paalrij op de vloerrand, zoals het oude rekenmodel",
+      "invoer": {
+        "a_r": "0"
+      },
+      "verwacht": {
+        "o_1": [18.232, "kN"],
+        "o_2": [23.38, "kN"],
+        "o_3": [45.608, "kN"],
+        "o_4": [45.971, "kN"],
+        "b_6": [16.091, "kN"],
+        "b_7": [57.022, "kN"],
+        "b_8": [51.441, "kN"],
+        "m_piek": [88.071, "kN"],
+        "R_binnen": [562.05, "kN"],
+        "R_rand": [237.91, "kN"],
+        "R_hoek": [103.08, "kN"],
+        "w_BGT": [3.0964, "mm"],
+        "l_bx": [2, "m"],
+        "UC_o": [0.7714],
+        "UC_b": [0.5591],
+        "stat_v": [1, "", 0.025],
+        "stat_b": [1, "", 0.05]
+      }
+    }
+  ]
+}

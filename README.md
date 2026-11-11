@@ -16,7 +16,7 @@ modules through its extension manager. Contributions are welcome — see
 | [Balklaag (houten vloerbalken)](modules/balklaag) | NEN-EN 1995-1-1 + NB | gereed |
 | [Bedrijfsvloer op grondslag (puntlasten)](modules/vloer-op-grondslag) | CUR-Aanbeveling 36, NEN-EN 1992-1-1 + NB | concept |
 | [Pons (plaat op kolom of paal)](modules/pons) | NEN-EN 1992-1-1 + NB | concept |
-| [Bedrijfsvloer op palen (FEM, schaakbord, krimp)](modules/vloer-op-palen) | NEN-EN 1992-1-1 + NB, NEN-EN 1992-3 | concept |
+| [Bedrijfsvloer op palen (FEM, ponskop, stroken, krimp)](modules/vloer-op-palen) | NEN-EN 1992-1-1 + NB, NEN-EN 1992-3 | concept |
 
 ## Opbouw
 
@@ -39,7 +39,15 @@ node scripts/controleer.mjs              # metadata, bestanden en index.json
 node scripts/controleer.mjs --schrijf    # index.json opnieuw maken
 node scripts/controleer.mjs --app <pad naar de app-repository>
                                          # ook elk blad doorrekenen (Node 24)
+node scripts/fem-antwoorden.mjs --app <pad naar de app-repository>
+                                         # de antwoorden van Open FEM Studio
+                                         # vastleggen (modules met @fem)
 ```
+
+Een blad met een `@fem`-blok laat de plaat door Open FEM Studio rekenen. Zo'n
+module heeft varianten in `test/varianten.json` met hun verwachte uitkomsten, en
+per variant de antwoorden van FEM Studio in `test/<naam>.json.gz`: de controle
+rekent de varianten daarmee door, zonder FEM Studio.
 
 Bij elke pull request draait dezelfde controle op GitHub, inclusief het
 doorrekenen van elk blad met de rekenkern van de app.

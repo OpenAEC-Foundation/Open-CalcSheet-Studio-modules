@@ -31,7 +31,11 @@ Names and descriptions are bilingual (Dutch and English).*
 6. **README.md** in de map: wat de module toetst, de aannames, en waarop ze is
    nagerekend.
 7. **Controleer** met `node scripts/controleer.mjs --schrijf` en neem de
-   bijgewerkte `index.json` mee in je pull request.
+   bijgewerkte `index.json` mee in je pull request. Rekent het blad met een
+   `@fem`-blok door Open FEM Studio, beschrijf dan in `test/varianten.json` de
+   varianten met hun verwachte uitkomsten (zie
+   [modules/vloer-op-palen/test](modules/vloer-op-palen/test)) en leg de
+   antwoorden vast met `node scripts/fem-antwoorden.mjs --app <pad>`.
 8. **Open een pull request.** De controle op GitHub rekent het blad door; een
    beheerder kijkt de toetsing na voordat de module `gepubliceerd` wordt.
 

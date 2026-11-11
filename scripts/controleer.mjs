@@ -8,9 +8,16 @@
 //                                            Calculation Studio (kern eerst
 //                                            bouwen), met de standaard-
 //                                            projectgegevens als startwaarden
+//
+// Een module met een @fem-blok heeft varianten in test/varianten.json, met de
+// antwoorden van Open FEM Studio vastgelegd in test/<naam>.json.gz (zie
+// scripts/fem-antwoorden.mjs). Met --app rekent de controle elke variant met die
+// antwoorden door, zonder FEM Studio: geen fouten, elk @fem-blok gerekend en in
+// evenwicht, en de verwachte uitkomsten. Zonder antwoord moet het blad foutloos
+// "niet gerekend" melden; dat is het gewone doorrekenen hieronder.
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
+import { join } from "node:path";
+import { alsGetal, antwoordenPad, drieDMeldingen, femBlokken, laadApp, leesAntwoorden, leesVarianten } from "./fem-varianten.mjs";
 
 const MAP = "modules";
 const CATEGORIEEN = ["algemeen", "hout", "staal", "beton", "metselwerk", "fundering", "belastingen", "overig"];
@@ -27,6 +34,8 @@ const fout = (id, tekst) => fouten.push(`${id}: ${tekst}`);
 const tweetalig = (w) => w && typeof w.nl === "string" && w.nl.trim() && typeof w.en === "string" && w.en.trim();
 
 const modules = [];
+/** De varianten van de modules met een @fem-blok (niet in index.json). */
+const variantenVan = new Map();
 for (const id of readdirSync(MAP).sort()) {
   const map = join(MAP, id);
   if (!statSync(map).isDirectory()) continue;
@@ -53,22 +62,26 @@ for (const id of readdirSync(MAP).sort()) {
   if (!beeld || !m.beeld.endsWith(".webp") || !existsSync(beeld)) fout(id, "beeld (een .webp-bestand in de map) ontbreekt");
   else if (statSync(beeld).size > MAX_BEELD) fout(id, `beeld is groter dan ${MAX_BEELD / 1000} kB`);
 
+  const varianten = leesVarianten(map);
+  for (const v of varianten ?? []) {
+    if (typeof v.naam !== "string" || !/^[a-z0-9-]+$/.test(v.naam)) fout(id, `test/varianten.json: variant zonder geldige naam`);
+    else if (!existsSync(antwoordenPad(map, v.naam))) fout(id, `test/${v.naam}.json.gz ontbreekt (node scripts/fem-antwoorden.mjs --app <pad>)`);
+  }
+
   modules.push({
     id, versie: m.versie, naam: m.naam, omschrijving: m.omschrijving, categorie: m.categorie,
     status: m.status, gepubliceerd: m.gepubliceerd === true, normen: m.normen,
     map: `${MAP}/${id}`, blad: m.blad, beeld: m.beeld, minimaleAppVersie: m.minimaleAppVersie,
   });
+  if (varianten) variantenVan.set(id, varianten);
 }
 
 // Elk blad doorrekenen: geen fouten in de uitwerking.
 if (appPad && fouten.length === 0) {
-  const { parse, evaluate } = await import(pathToFileURL(resolve(appPad, "packages/core/dist/index.js")).href);
   // Een blad krijgt in de app de projectgegevens (gevolgklasse, rekenwijze, …)
   // vóór zijn eerste regel; hier de standaardwaarden daarvan.
-  const { PROJECT_VELDEN, projectScope } = await import(
-    pathToFileURL(resolve(appPad, "packages/desktop/src/store/projectGegevens.ts")).href
-  );
-  const scope = projectScope(Object.fromEntries(PROJECT_VELDEN.map((v) => [v.naam, v.standaard])));
+  const { kern, scope, kentFem } = await laadApp(appPad);
+  const { parse, evaluate } = kern;
   // De kern zet een rekenfout in de uitkomst ("Error: …") of, bij een
   // voorwaarde, als tekst in de tak.
   const zoekFout = (knopen) => {
@@ -87,6 +100,38 @@ if (appPad && fouten.length === 0) {
       else console.log(`  ✓  ${m.id}: blad rekent door (${uit.length} regels)`);
     } catch (e) {
       fout(m.id, `blad rekent niet door: ${e.message}`);
+    }
+  }
+
+  // De varianten met de vastgelegde antwoorden van Open FEM Studio.
+  for (const m of modules.filter((x) => variantenVan.has(x.id))) {
+    if (!kentFem) { fout(m.id, "deze app kent het @fem-blok niet (minimaleAppVersie " + m.minimaleAppVersie + ")"); continue; }
+    const bron = readFileSync(join(m.map, m.blad), "utf8");
+    for (const v of variantenVan.get(m.id)) {
+      const wat = `${m.id}/${v.naam}`;
+      try {
+        const { toetsingen } = leesAntwoorden(antwoordenPad(m.map, v.naam));
+        const records = kern.leesVastgelegdeToetsingen(toetsingen) ?? {};
+        const opties = { toetsingen: Object.fromEntries(Object.entries(records).map(([h, r]) => [h, kern.alsAntwoord(r)])), toetsModus: "lezen" };
+        const { nodes, scope: uit } = kern.evaluateMetScope(parse(bron), v.invoer ?? {}, scope, opties);
+        const f = zoekFout(nodes) ?? drieDMeldingen(nodes)[0];
+        if (f) { fout(wat, `rekent niet foutloos door: ${f}`); continue; }
+        const blokken = femBlokken(nodes);
+        const open = blokken.filter((b) => b.status !== "klaar");
+        if (!blokken.length || open.length) { fout(wat, `@fem niet gerekend: ${open.map((b) => `${b.status} ${b.melding ?? ""}`).join("; ") || "geen blok"}`); continue; }
+        const scheef = blokken.flatMap((b) => b.gevallen).filter((g) => !(Math.abs(g.somR - g.somLast) <= 1e-6 * Math.max(1, Math.abs(g.somLast))));
+        if (scheef.length) { fout(wat, `geen evenwicht in ${scheef.map((g) => g.naam).join(", ")}`); continue; }
+        const afwijkend = [];
+        for (const [naam, [waarde, eenheid = "", tolerantie = 0.002]] of Object.entries(v.verwacht ?? {})) {
+          let w;
+          try { w = alsGetal(uit[naam], eenheid); } catch (e) { afwijkend.push(`${naam}: ${e.message}`); continue; }
+          if (!(Math.abs(w - waarde) <= tolerantie * Math.max(Math.abs(waarde), 1e-9))) afwijkend.push(`${naam} = ${w.toPrecision(5)} ${eenheid}, verwacht ${waarde}`);
+        }
+        if (afwijkend.length) fout(wat, afwijkend.join("; "));
+        else console.log(`  ✓  ${wat}: gerekend met de antwoorden van FEM Studio, ${Object.keys(v.verwacht ?? {}).length} uitkomsten zoals verwacht`);
+      } catch (e) {
+        fout(wat, `rekent niet door: ${e.message}`);
+      }
     }
   }
 }

@@ -76,14 +76,14 @@
     },
     {
       "id": "vloer-op-palen",
-      "versie": "2026.45.0",
+      "versie": "2026.46.0",
       "naam": {
-        "nl": "Bedrijfsvloer op palen (FEM, schaakbord, krimp)",
-        "en": "Pile-supported industrial floor (FEM, pattern loading, shrinkage)"
+        "nl": "Bedrijfsvloer op palen (FEM, ponskop, stroken, krimp)",
+        "en": "Pile-supported industrial floor (FEM, drop panels, strips, shrinkage)"
       },
       "omschrijving": {
-        "nl": "Betonvloer op verende palen in een raster: een stuk van 4 × 4 velden met plaatelementen (DKT) voor volle belasting en schaakbord, wapening onder en boven (kolomstrook), de paalreactie voor de pons, en krimp met het cementgehalte, de beweging over de vloerlengte en de wapening tegen scheuren. Met plattegrond, momentenbeeld en 3D-doorbuiging.",
-        "en": "Concrete floor on elastic piles in a grid: a 4 × 4 bay patch with plate elements (DKT) for full and pattern loading, bottom and top reinforcement (column strip), the pile reaction for punching, and shrinkage with the cement content, movement over the floor length and crack control reinforcement. With plan, moment plot and 3D deflection."
+        "nl": "Betonvloer op verende palen in een raster, gerekend door Open FEM Studio: een stuk vloer met de vloerrand, als vlakke plaat, met een ponskop boven elke paal, met versterkte stroken over de paalrijen of een combinatie. Volle belasting en schaakbord; per zone (veld, kolomstrook, ponskop, strook, rand- en hoekveld) de wapening met de werkelijke dikte: netten, bijleg boven de palen en in de stroken, met de complete wapening rond een paal in 3D. De paalreacties voor de pons, en krimp met het cementgehalte. Met plattegrond en momenten in kleur en in 3D.",
+        "en": "Concrete floor on elastic piles in a grid, calculated by Open FEM Studio: a floor patch including its edge, as a flat slab, with a drop panel over each pile, with thickened strips along the pile rows, or a combination. Full and pattern loading; per zone (field, column strip, drop panel, strip, edge and corner bay) the reinforcement at the actual thickness: meshes, extra top bars over the piles and bottom bars in the strips, with the complete reinforcement around a pile in 3D. The pile reactions for punching, and shrinkage with the cement content. With plan and moments in colour and in 3D."
       },
       "categorie": "beton",
       "status": "concept",
