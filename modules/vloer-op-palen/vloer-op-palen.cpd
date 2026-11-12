@@ -1099,7 +1099,7 @@ buis {{r_pw(jj)*cos(k*π/4)}} {{r_pw(jj)*sin(k*π/4)}} {{-c_nom - 0.6*ø_pw}} {{
 #if st_x + st_y > 0
 '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:1px 6px;">Strook, bij de paal</td><td style="text-align:right; padding:1px 6px;">'round(b_10/kN; 1)'</td><td style="text-align:right; padding:1px 6px;">'t_sd/mm'</td><td style="padding:1px 6px;">net + Ø'ø_bb/mm'-'s_bb/mm'</td><td style="text-align:right; padding:1px 6px;">'round(m_Rbb(t_sd)/kN; 1)'</td><td style="text-align:right; padding:1px 6px;">'round(UC_10; 2)'</td></tr>
 #end if
-'<tr style="border-bottom:1px solid #e5e7eb; color:#6b7280;"><td style="padding:1px 6px;">Piek op de paal (ter informatie)</td><td style="text-align:right; padding:1px 6px;">'round(m_piek/kN; 1)'</td><td colspan="4" style="padding:1px 6px;">spreidt over de kolomstrook</td></tr>
+'<tr style="border-bottom:1px solid #e5e7eb; color:#6b7280;"><td style="padding:1px 6px;">Piek op de paal</td><td style="text-align:right; padding:1px 6px;">'round(m_piek/kN; 1)'</td><td colspan="4" style="padding:1px 6px;">begrensd op R<sub>binnen</sub>/5 en getoetst bij de paalreactie</td></tr>
 '</table>
 '<i>m<sub>Ed</sub> is de omhullende over volle belasting en beide schaakborden, gemiddeld over de zone (kolomstrook een half veld breed op de paallijn, NEN-EN 1992-1-1 bijlage I), in de maatgevende richting; d van de binnenste laag bij de werkelijke dikte t, z = 0,9·d. Het wringend moment telt hier niet mee; in de punten hierboven wel.</i>
 #show
@@ -1130,6 +1130,13 @@ R_binnen', binnenpaal<span class="kolom-3"></span>'
 R_rand', randpaal<span class="kolom-3"></span>'
 R_hoek', hoekpaal<span class="kolom-3"></span>'
 R_paal = max(R_binnen; R_rand; R_hoek)', grootste paalreactie (rekenwaarde)<span class="kolom-2"></span>'
+#hide
+'Het piekmoment boven de binnenpaal telt mee, begrensd op een vijfde van de paalreactie
+'(per meter); dikte bij de paal: ponskop, strook of vloer.
+t_pk = if(kop ≡ 1; t_kd; if(st_x + st_y > 0; t_sd; h))
+#show
+m_pk,d = min(m_piek; R_binnen/5)', piekmoment boven de binnenpaal, hooguit R<sub>binnen</sub>/5 (uit FEM 'round(m_piek/kN; 1)' kNm/m)<span class="kolom-2"></span>'
+UC_pk = m_pk,d/m_Rbb(t_pk)', net boven met bijleg, t = 't_pk/mm' mm, m<sub>Rd</sub> = 'round(m_Rbb(t_pk)/kN; 1)' kNm/m<span class="kolom-2"></span>'
 w_BGT', grootste doorbuiging, karakteristiek (ongescheurd en zonder kruip: een ondergrens)<span class="kolom-2"></span>'
 'Pons boven de paal met de module Pons: V<sub>Ed</sub> = R<sub>binnen</sub>, R<sub>rand</sub> of R<sub>hoek</sub> met de ligging binnen, rand of hoek, en de plaatdikte bij de paal t = 't_p/mm' mm.
 '<i>Voeg de module Pons toe en typ in het veld V<sub>Ed</sub> de verwijzing naar dit blad, met het kenmerk uit de projectboom: #1.R_binnen als dit blad #1 is (of #1.R_rand, #1.R_hoek, #1.R_paal).</i><span class="alleen-scherm"></span>
@@ -1229,6 +1236,7 @@ alles = bool(gerekend*ger_3*ger_w ≡ 1)
 #end if
 #if gerekend ≡ 1
 '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Momenten per zone, netten en bijleg (bijlage I, z = 0,9·d)</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(max(UC_o; UC_b))'">'round(max(UC_o; UC_b); 2)'</td><td style="padding:2px 8px; color:'kleur(max(UC_o; UC_b))'">'oordeel(max(UC_o; UC_b))'</td></tr>
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Piekmoment boven de paal, hooguit R/5</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_pk)'">'round(UC_pk; 2)'</td><td style="padding:2px 8px; color:'kleur(UC_pk)'">'oordeel(UC_pk)'</td></tr>
 #else
 '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Momenten per zone</td><td style="text-align:right; padding:2px 8px;">–</td><td style="padding:2px 8px; color:#b91c1c; font-weight:700;">nog niet gerekend</td></tr>
 #end if
@@ -1241,7 +1249,7 @@ alles = bool(gerekend*ger_3*ger_w ≡ 1)
 '</table>
 #if alles ≡ 1
 #hide
-UC_max = max(UC_pt; UC_bt; UC_w; UC_o; UC_b; UC_Amin; UC_krimp)
+UC_max = max(UC_pt; UC_bt; UC_w; UC_o; UC_b; UC_pk; UC_Amin; UC_krimp)
 #show
 UC_max', de grootste van de toetsen hierboven'
 #if UC_max ≤ 1

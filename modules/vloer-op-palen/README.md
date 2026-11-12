@@ -128,7 +128,9 @@ eruit.
 
 **Verder:** de bijleg boven (zo lang als de kolomstrook meer vraagt dan het net boven,
 plus d en de verankeringslengte), de complete wapening rond een binnenpaal in 3D, de
-paalreacties voor de module Pons (`#1.R_binnen`, `R_rand`, `R_hoek`, `R_paal`), en krimp:
+paalreacties voor de module Pons (`#1.R_binnen`, `R_rand`, `R_hoek`, `R_paal`), het piekmoment boven de
+binnenpaal begrensd op een vijfde van de paalreactie (m ≤ R/5 per meter) en getoetst met het
+net boven en de bijleg, en krimp:
 de vrije krimp volgens NEN-EN 1992-1-1 bijlage B en ACI 209R-92 en de verkorting over de
 vloer. Standaard krimpt de vloer vrij: een vloer op palen ligt op grond die te slap is om op
 te funderen, de palen buigen mee en houden de vloer niet vast, dus er ontstaat geen trek en
