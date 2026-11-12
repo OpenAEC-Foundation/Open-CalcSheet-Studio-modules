@@ -1147,8 +1147,18 @@ RH = ?{60}', relatieve vochtigheid (%)<span class="kolom-3"></span>'
   Klasse S (CEM III, langzaam) = 1
   Klasse R (CEM I 42,5 R, 52,5) = 3
 @end
-R_ax = ?{0.5}', verhinderingsgraad (0 vrij, 1 volledig)<span class="kolom-3"></span>'
-'<i>De vloer droogt aan de bovenkant uit. Palen en randen verhinderen de krimp gedeeltelijk: 0 is een vloer die vrij kan krimpen, 1 een volledig verhinderde. Minder cement (en minder water) geeft minder cementlijm en minder krimp. De Eurocode kent het cementgehalte niet; ACI 209R-92 wel, met de factor 0,75 + 0,00061·c.</i><span class="alleen-scherm"></span>
+@select krimp_verh "Krimp van de vloer"
+  Vrij: de palen verhinderen de krimp niet = 1
+  Verhinderd, met een verhinderingsgraad = 2
+@end
+#if krimp_verh ≡ 2
+    R_ax = ?{0.5}', verhinderingsgraad (0 vrij, 1 volledig)<span class="kolom-3"></span>'
+#else
+    #hide
+    R_ax = 0
+    #show
+#end if
+'<i>Een vloer op palen ligt op grond die te slap is om op te funderen; de palen buigen mee en houden de vloer niet vast. Hij krimpt dan vrij: er ontstaat geen trek en geen krimpscheur, en alleen de verkorting telt, voor de voegen en de aansluitingen aan de randen. Kies verhinderd als de vloer aan wanden, poeren of een bestaande vloer vastzit. De vloer droogt aan de bovenkant uit. Minder cement (en minder water) geeft minder cementlijm en minder krimp. De Eurocode kent het cementgehalte niet; ACI 209R-92 wel, met de factor 0,75 + 0,00061·c.</i><span class="alleen-scherm"></span>
 
 #hide
 'NEN-EN 1992-1-1 bijlage B: uitdrogingskrimp en autogene krimp, eindwaarde.
@@ -1192,11 +1202,15 @@ A_b = a_b*b_s1 to mm^2
 ρ_eff = A_o/(b_s1*min(2.5*(h - d_o(h)); h/2))
 s_rmax = 3.4*c_nom + 0.425*0.8*1.0*ø_o/ρ_eff
 w_k = s_rmax*R_ax*ε_cs to mm
-UC_krimp = w_k/w_lim
-UC_Amin = A_s,min/(A_o + A_b)
+UC_krimp = if(krimp_verh ≡ 2; w_k/w_lim; 0)
+UC_Amin = if(krimp_verh ≡ 2; A_s,min/(A_o + A_b); 0)
 #show
-A_s,min', (7.1) voor de hele doorsnede, tegen de netten onder en boven, k = 'k_Amin', σ<sub>s</sub> = 'σ_s/(N/mm^2)' N/mm²<span class="kolom-2"></span>'
-w_k', geschatte scheurwijdte, s<sub>r,max</sub> = 'round(s_rmax/(1 mm))' mm, R<sub>ax</sub> = 'R_ax'<span class="kolom-2"></span>'
+#if krimp_verh ≡ 2
+    A_s,min', (7.1) voor de hele doorsnede, tegen de netten onder en boven, k = 'k_Amin', σ<sub>s</sub> = 'σ_s/(N/mm^2)' N/mm²<span class="kolom-2"></span>'
+    w_k', geschatte scheurwijdte, s<sub>r,max</sub> = 'round(s_rmax/(1 mm))' mm, R<sub>ax</sub> = 'R_ax'<span class="kolom-2"></span>'
+#else
+    'Vrije krimp: de vloer wordt niet vastgehouden, dus er ontstaat geen trek door krimp. Geen minimumwapening volgens (7.1) en geen krimpscheur; de verkorting ΔL hierboven bepaalt de voegen en de aansluitingen aan de randen.
+#end if
 
 # Samenvatting
 
@@ -1218,8 +1232,12 @@ alles = bool(gerekend*ger_3*ger_w ≡ 1)
 #else
 '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Momenten per zone</td><td style="text-align:right; padding:2px 8px;">–</td><td style="padding:2px 8px; color:#b91c1c; font-weight:700;">nog niet gerekend</td></tr>
 #end if
-'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Minimumwapening krimp (7.1)</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_Amin)'">'round(UC_Amin; 2)'</td><td style="padding:2px 8px; color:'kleur(UC_Amin)'">'oordeel(UC_Amin)'</td></tr>
-'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Scheurwijdte door krimp</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_krimp)'">'round(UC_krimp; 2)'</td><td style="padding:2px 8px; color:'kleur(UC_krimp)'">'oordeel(UC_krimp)'</td></tr>
+#if krimp_verh ≡ 2
+    '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Minimumwapening krimp (7.1)</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_Amin)'">'round(UC_Amin; 2)'</td><td style="padding:2px 8px; color:'kleur(UC_Amin)'">'oordeel(UC_Amin)'</td></tr>
+    '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Scheurwijdte door krimp</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_krimp)'">'round(UC_krimp; 2)'</td><td style="padding:2px 8px; color:'kleur(UC_krimp)'">'oordeel(UC_krimp)'</td></tr>
+#else
+    '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Krimp</td><td style="text-align:right; padding:2px 8px;">–</td><td style="padding:2px 8px;">vrij, niet verhinderd: geen trek</td></tr>
+#end if
 '</table>
 #if alles ≡ 1
 #hide

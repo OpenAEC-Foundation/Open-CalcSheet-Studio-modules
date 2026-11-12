@@ -129,8 +129,12 @@ eruit.
 **Verder:** de bijleg boven (zo lang als de kolomstrook meer vraagt dan het net boven,
 plus d en de verankeringslengte), de complete wapening rond een binnenpaal in 3D, de
 paalreacties voor de module Pons (`#1.R_binnen`, `R_rand`, `R_hoek`, `R_paal`), en krimp:
-de vrije krimp volgens NEN-EN 1992-1-1 bijlage B en ACI 209R-92, de minimumwapening (7.1)
-en een geschatte scheurwijdte met de verhinderingsgraad (NEN-EN 1992-3 bijlage M).
+de vrije krimp volgens NEN-EN 1992-1-1 bijlage B en ACI 209R-92 en de verkorting over de
+vloer. Standaard krimpt de vloer vrij: een vloer op palen ligt op grond die te slap is om op
+te funderen, de palen buigen mee en houden de vloer niet vast, dus er ontstaat geen trek en
+geen krimpscheur. Met de keuze *verhinderd* (een vloer die aan wanden, poeren of een
+bestaande vloer vastzit) komen de minimumwapening (7.1) en een geschatte scheurwijdte met de
+verhinderingsgraad (NEN-EN 1992-3 bijlage M) erbij.
 
 **Zonder FEM Studio:** de blokken staan als NIET GEREKEND en het blad meldt dat de
 krachtsverdeling, de wapening, de scheurwijdte en de paalreacties nog niet gerekend zijn,
