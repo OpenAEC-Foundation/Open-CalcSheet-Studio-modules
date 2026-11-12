@@ -1,8 +1,11 @@
 // Gedeeld door scripts/controleer.mjs en scripts/fem-antwoorden.mjs: de varianten van
-// een module met een @fem-blok en de vastgelegde antwoorden van Open FEM Studio.
+// een module met een @fem- of @kern-blok en de vastgelegde antwoorden van Open FEM Studio.
 //
 //   modules/<id>/test/varianten.json    de varianten: invoer (de velden en keuzes
-//                                       van het blad) en verwachte uitkomsten
+//                                       van het blad) en verwachte uitkomsten; een
+//                                       variant met "antwoordenVan" rekent met de
+//                                       antwoorden van een andere variant, en een met
+//                                       "nietGerekend" hoort juist geen uitkomst te geven
 //   modules/<id>/test/<naam>.json.gz    per variant de antwoorden van FEM Studio,
 //                                       { versie, toetsingen } zoals de app ze bij
 //                                       een blad bewaart
@@ -19,7 +22,8 @@ export async function laadApp(appPad) {
   );
   const scope = projectScope(Object.fromEntries(PROJECT_VELDEN.map((v) => [v.naam, v.standaard])));
   const kentFem = typeof kern.alsAntwoord === "function" && typeof kern.leesVastgelegdeToetsingen === "function" && typeof kern.femBewaar === "function";
-  return { kern, scope, kentFem };
+  const kentKern = typeof kern.kernAanroepen === "function" && typeof kern.kernVerzoekBewaard === "function";
+  return { kern, scope, kentFem, kentKern };
 }
 
 /** De varianten van een module, of null als de module er geen heeft. */
@@ -48,6 +52,18 @@ export function femBlokken(knopen, uit = []) {
   }
   return uit;
 }
+
+/** Alle @kern-blokken in een doorgerekend blad, ook in een #if. */
+export function kernBlokken(knopen, uit = []) {
+  for (const k of knopen) {
+    if (k.type === "kern") uit.push(k);
+    if (k.children) kernBlokken(k.children, uit);
+  }
+  return uit;
+}
+
+/** Staat er in de rekentekst een @kern-blok? */
+export const heeftKern = (bron) => /^s*@kern/m.test(bron);
 
 /** De meldingen van de 3D-blokken in een doorgerekend blad. */
 export function drieDMeldingen(knopen, uit = []) {

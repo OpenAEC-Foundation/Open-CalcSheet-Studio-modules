@@ -9,15 +9,21 @@
 //                                            bouwen), met de standaard-
 //                                            projectgegevens als startwaarden
 //
-// Een module met een @fem-blok heeft varianten in test/varianten.json, met de
+// Een module met een @fem- of @kern-blok heeft varianten in test/varianten.json, met de
 // antwoorden van Open FEM Studio vastgelegd in test/<naam>.json.gz (zie
 // scripts/fem-antwoorden.mjs). Met --app rekent de controle elke variant met die
 // antwoorden door, zonder FEM Studio: geen fouten, elk @fem-blok gerekend en in
-// evenwicht, en de verwachte uitkomsten. Zonder antwoord moet het blad foutloos
-// "niet gerekend" melden; dat is het gewone doorrekenen hieronder.
+// evenwicht, elk @kern-blok gerekend, en de verwachte uitkomsten. Zonder antwoord moet
+// het blad foutloos "niet gerekend" melden; dat is het gewone doorrekenen hieronder.
+//
+// Een variant met "antwoordenVan" rekent met de antwoorden van een andere variant: zijn
+// invoer verandert niets aan wat het blad aan FEM Studio vraagt (een keuze voor het
+// scherm). Een variant met "nietGerekend" (een lijst namen) hoort juist geen uitkomst te
+// geven, ook niet met die antwoorden: geen blok is gerekend, geen van die namen heeft
+// een waarde, en het blad geeft geen maatgevende UC.
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { alsGetal, antwoordenPad, drieDMeldingen, femBlokken, laadApp, leesAntwoorden, leesVarianten } from "./fem-varianten.mjs";
+import { alsGetal, antwoordenPad, drieDMeldingen, femBlokken, heeftKern, kernBlokken, laadApp, leesAntwoorden, leesVarianten } from "./fem-varianten.mjs";
 
 const MAP = "modules";
 const CATEGORIEEN = ["algemeen", "hout", "staal", "beton", "metselwerk", "fundering", "belastingen", "overig"];
@@ -65,7 +71,10 @@ for (const id of readdirSync(MAP).sort()) {
   const varianten = leesVarianten(map);
   for (const v of varianten ?? []) {
     if (typeof v.naam !== "string" || !/^[a-z0-9-]+$/.test(v.naam)) fout(id, `test/varianten.json: variant zonder geldige naam`);
-    else if (!existsSync(antwoordenPad(map, v.naam))) fout(id, `test/${v.naam}.json.gz ontbreekt (node scripts/fem-antwoorden.mjs --app <pad>)`);
+    else if (v.nietGerekend && (!Array.isArray(v.nietGerekend) || !v.nietGerekend.length)) fout(id, `test/varianten.json: ${v.naam}.nietGerekend is een lijst namen`);
+    else if (v.antwoordenVan) {
+      if (!existsSync(antwoordenPad(map, v.antwoordenVan))) fout(id, `test/${v.antwoordenVan}.json.gz ontbreekt (antwoordenVan van ${v.naam})`);
+    } else if (!v.nietGerekend && !existsSync(antwoordenPad(map, v.naam))) fout(id, `test/${v.naam}.json.gz ontbreekt (node scripts/fem-antwoorden.mjs --app <pad>)`);
   }
 
   modules.push({
@@ -80,7 +89,7 @@ for (const id of readdirSync(MAP).sort()) {
 if (appPad && fouten.length === 0) {
   // Een blad krijgt in de app de projectgegevens (gevolgklasse, rekenwijze, …)
   // vóór zijn eerste regel; hier de standaardwaarden daarvan.
-  const { kern, scope, kentFem } = await laadApp(appPad);
+  const { kern, scope, kentFem, kentKern } = await laadApp(appPad);
   const { parse, evaluate } = kern;
   // De kern zet een rekenfout in de uitkomst ("Error: …") of, bij een
   // voorwaarde, als tekst in de tak.
@@ -107,18 +116,37 @@ if (appPad && fouten.length === 0) {
   for (const m of modules.filter((x) => variantenVan.has(x.id))) {
     if (!kentFem) { fout(m.id, "deze app kent het @fem-blok niet (minimaleAppVersie " + m.minimaleAppVersie + ")"); continue; }
     const bron = readFileSync(join(m.map, m.blad), "utf8");
+    if (heeftKern(bron) && !kentKern) { fout(m.id, "deze app kent het @kern-blok niet (minimaleAppVersie " + m.minimaleAppVersie + ")"); continue; }
     for (const v of variantenVan.get(m.id)) {
       const wat = `${m.id}/${v.naam}`;
       try {
-        const { toetsingen } = leesAntwoorden(antwoordenPad(m.map, v.naam));
+        const bronVan = v.antwoordenVan ?? (v.nietGerekend ? null : v.naam);
+        const { toetsingen } = bronVan ? leesAntwoorden(antwoordenPad(m.map, bronVan)) : { toetsingen: {} };
         const records = kern.leesVastgelegdeToetsingen(toetsingen) ?? {};
         const opties = { toetsingen: Object.fromEntries(Object.entries(records).map(([h, r]) => [h, kern.alsAntwoord(r)])), toetsModus: "lezen" };
         const { nodes, scope: uit } = kern.evaluateMetScope(parse(bron), v.invoer ?? {}, scope, opties);
         const f = zoekFout(nodes) ?? drieDMeldingen(nodes)[0];
         if (f) { fout(wat, `rekent niet foutloos door: ${f}`); continue; }
+        if (v.nietGerekend) {
+          // Het omgekeerde: met deze invoer mag er niets gerekend zijn en nergens een uitkomst staan.
+          const klaar = [...femBlokken(nodes), ...kernBlokken(nodes)].filter((b) => b.status === "klaar");
+          const metWaarde = v.nietGerekend.filter((naam) => {
+            try { return Number.isFinite(alsGetal(uit[naam], "")) || (uit[naam] && typeof uit[naam].toNumber === "function"); } catch { return true; }
+          });
+          const tekst = kern.render(nodes).replace(/<[^>]+>/g, " ");
+          const meldingen = [...femBlokken(nodes), ...kernBlokken(nodes)].map((b) => b.melding ?? "").join(" ");
+          if (klaar.length) fout(wat, `hoort niet gerekend te zijn, maar ${klaar.map((b) => `${b.type} ${b.naam}`).join(", ")} is gerekend`);
+          else if (metWaarde.length) fout(wat, `hoort geen uitkomst te geven, maar heeft ${metWaarde.join(", ")}`);
+          else if (/Maatgevende UC/.test(tekst)) fout(wat, "hoort geen maatgevende UC te geven");
+          else if (v.melding && !meldingen.includes(v.melding)) fout(wat, `de melding bevat niet "${v.melding}": ${meldingen}`);
+          else console.log(`  ✓  ${wat}: niet gerekend en zonder uitkomst, zoals het hoort${v.melding ? ` ("${v.melding}")` : ""}`);
+          continue;
+        }
         const blokken = femBlokken(nodes);
         const open = blokken.filter((b) => b.status !== "klaar");
         if (!blokken.length || open.length) { fout(wat, `@fem niet gerekend: ${open.map((b) => `${b.status} ${b.melding ?? ""}`).join("; ") || "geen blok"}`); continue; }
+        const kernOpen = kernBlokken(nodes).filter((b) => b.status !== "klaar");
+        if (kernOpen.length) { fout(wat, `@kern niet gerekend: ${kernOpen.map((b) => `${b.naam} ${b.status} ${b.melding ?? ""}`).join("; ")}`); continue; }
         const scheef = blokken.flatMap((b) => b.gevallen).filter((g) => !(Math.abs(g.somR - g.somLast) <= 1e-6 * Math.max(1, Math.abs(g.somLast))));
         if (scheef.length) { fout(wat, `geen evenwicht in ${scheef.map((g) => g.naam).join(", ")}`); continue; }
         const afwijkend = [];

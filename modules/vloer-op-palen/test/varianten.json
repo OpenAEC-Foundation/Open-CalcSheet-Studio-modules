@@ -1,5 +1,5 @@
 {
-  "toelichting": "Varianten die scripts/controleer.mjs doorrekent met de vastgelegde antwoorden van Open FEM Studio (test/<naam>.json.gz, opnieuw te maken met node scripts/fem-antwoorden.mjs --app <pad>). Verwacht: [waarde, eenheid, relatieve tolerantie (standaard 0,002)].",
+  "toelichting": "Varianten die scripts/controleer.mjs doorrekent met de vastgelegde antwoorden van Open FEM Studio (test/<naam>.json.gz, opnieuw te maken met node scripts/fem-antwoorden.mjs --app <pad>). Verwacht: [waarde, eenheid, relatieve tolerantie (standaard 0,002)]. Een variant met antwoordenVan rekent met de antwoorden van een andere variant; een variant met nietGerekend hoort geen uitkomst te geven.",
   "varianten": [
     {
       "naam": "vlak",
@@ -22,7 +22,16 @@
         "UC_o": [0.7678],
         "UC_b": [0.555],
         "stat_v": [1, "", 0.025],
-        "stat_b": [1, "", 0.05]
+        "stat_b": [1, "", 0.05],
+        "n_pt": [9],
+        "UC_pt": [0.97935],
+        "UC_bt": [0.32902],
+        "UC_w": [0.78101],
+        "p_max": [6],
+        "ctl_3": [1, "", 0.001],
+        "ctl_w": [1, "", 0.001],
+        "ev_R": [1, "", 0.0001],
+        "UC_max": [2.0242]
       }
     },
     {
@@ -49,7 +58,16 @@
         "UC_o": [0.7255],
         "UC_b": [0.6062],
         "stat_v": [1, "", 0.025],
-        "stat_b": [1, "", 0.05]
+        "stat_b": [1, "", 0.05],
+        "n_pt": [10],
+        "UC_pt": [0.91636],
+        "UC_bt": [0.30392],
+        "UC_w": [0.73031],
+        "p_max": [6],
+        "ctl_3": [1, "", 0.001],
+        "ctl_w": [1, "", 0.001],
+        "ev_R": [1, "", 0.0001],
+        "UC_max": [2.0242]
       }
     },
     {
@@ -77,7 +95,16 @@
         "UC_o": [0.5199],
         "UC_b": [0.6131],
         "stat_v": [1, "", 0.025],
-        "stat_b": [1, "", 0.05]
+        "stat_b": [1, "", 0.05],
+        "n_pt": [10],
+        "UC_pt": [0.64455],
+        "UC_bt": [0.38504],
+        "UC_w": [0.51433],
+        "p_max": [3],
+        "ctl_3": [1, "", 0.001],
+        "ctl_w": [1, "", 0.001],
+        "ev_R": [1, "", 0.0001],
+        "UC_max": [2.0242]
       }
     },
     {
@@ -108,7 +135,16 @@
         "UC_o": [0.5158],
         "UC_b": [0.5474],
         "stat_v": [1, "", 0.025],
-        "stat_b": [1, "", 0.05]
+        "stat_b": [1, "", 0.05],
+        "n_pt": [10],
+        "UC_pt": [0.59194],
+        "UC_bt": [0.37731],
+        "UC_w": [0.50928],
+        "p_max": [3],
+        "ctl_3": [1, "", 0.001],
+        "ctl_w": [1, "", 0.001],
+        "ev_R": [1, "", 0.0001],
+        "UC_max": [2.0242]
       }
     },
     {
@@ -140,7 +176,16 @@
         "UC_o": [0.6795],
         "UC_b": [0.7924],
         "stat_v": [1, "", 0.025],
-        "stat_b": [1, "", 0.05]
+        "stat_b": [1, "", 0.05],
+        "n_pt": [9],
+        "UC_pt": [0.73228],
+        "UC_bt": [0.26363],
+        "UC_w": [0.58924],
+        "p_max": [4],
+        "ctl_3": [1, "", 0.001],
+        "ctl_w": [1, "", 0.001],
+        "ev_R": [1, "", 0.0001],
+        "UC_max": [2.0242]
       }
     },
     {
@@ -166,8 +211,100 @@
         "UC_o": [0.7714],
         "UC_b": [0.5591],
         "stat_v": [1, "", 0.025],
-        "stat_b": [1, "", 0.05]
+        "stat_b": [1, "", 0.05],
+        "n_pt": [9],
+        "UC_pt": [0.98409],
+        "UC_bt": [0.42734],
+        "UC_w": [0.78626],
+        "p_max": [6],
+        "ctl_3": [1, "", 0.001],
+        "ctl_w": [1, "", 0.001],
+        "ev_R": [1, "", 0.0001],
+        "UC_max": [2.0242]
       }
+    },
+    {
+      "naam": "vlak-punt-2",
+      "omschrijving": "de standaardinvoer met punt 2 uitgeschreven: bijna zuiver m_x onder, m_y drukt (bijlage F.5 tot en met F.7)",
+      "antwoordenVan": "vlak",
+      "invoer": {
+        "punt_uit": "2"
+      },
+      "verwacht": {
+        "p_u": [2],
+        "s_u": [1],
+        "z_u": [168, "mm"],
+        "m_xu": [24.84, "kN"],
+        "m_yu": [-11.216, "kN"],
+        "A_hx": [340.07, "mm^2"],
+        "A_hy": [0, "mm^2"],
+        "A_09": [314.25, "mm^2"],
+        "ctl_3": [1, "", 0.001],
+        "σ_su": [124.09, "MPa"],
+        "h_cef": [70.007, "mm"],
+        "s_wu": [291.41, "mm"],
+        "w_hu": [0.10848, "mm"],
+        "ctl_w": [1, "", 0.001]
+      }
+    },
+    {
+      "naam": "vlak-punt-3",
+      "omschrijving": "de standaardinvoer met punt 3 uitgeschreven: naast de paalkop, trek boven in beide richtingen",
+      "antwoordenVan": "vlak",
+      "invoer": {
+        "punt_uit": "3"
+      },
+      "verwacht": {
+        "p_u": [3],
+        "s_u": [-1],
+        "z_u": [168, "mm"],
+        "m_xu": [-67.718, "kN"],
+        "m_yu": [-78.853, "kN"],
+        "A_hx": [927.1, "mm^2"],
+        "A_hy": [1079.5, "mm^2"],
+        "A_09": [848.32, "mm^2"],
+        "ctl_3": [1, "", 0.001],
+        "σ_su": [232.48, "MPa"],
+        "h_cef": [66.946, "mm"],
+        "s_wu": [234.8, "mm"],
+        "w_hu": [0.19337, "mm"],
+        "ctl_w": [1, "", 0.001]
+      }
+    },
+    {
+      "naam": "vlak-punt-8",
+      "omschrijving": "de standaardinvoer met punt 8 uitgeschreven: het hoekveld op de diagonaal, met het wringend moment",
+      "antwoordenVan": "vlak",
+      "invoer": {
+        "punt_uit": "8"
+      },
+      "verwacht": {
+        "p_u": [8],
+        "s_u": [-1],
+        "z_u": [168, "mm"],
+        "m_xu": [-18.484, "kN"],
+        "m_yu": [-18.484, "kN"],
+        "m_xyu": [12.766, "kN"],
+        "A_hx": [427.84, "mm^2"],
+        "A_hy": [427.84, "mm^2"],
+        "A_09": [391.49, "mm^2"],
+        "ctl_3": [1, "", 0.001],
+        "σ_su": [92.138, "MPa"],
+        "h_cef": [66.946, "mm"],
+        "s_wu": [234.8, "mm"],
+        "w_hu": [0.064902, "mm"],
+        "ctl_w": [1, "", 0.001]
+      }
+    },
+    {
+      "naam": "fnl",
+      "omschrijving": "fysisch niet-lineair gekozen: FEM Studio rekent een plaat alleen lineair, dus niets is gerekend en nergens staat een uitkomst, ook niet met de antwoorden van de lineaire berekening",
+      "antwoordenVan": "vlak",
+      "invoer": {
+        "krachtsverdeling": "1"
+      },
+      "nietGerekend": ["gerekend", "o_1", "b_7", "R_binnen", "w_BGT", "UC_o", "UC_b", "UC_pt", "UC_bt", "UC_w", "UC_max", "ctl_3", "ctl_w"],
+      "melding": "alleen lineair"
     }
   ]
 }

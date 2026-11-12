@@ -1,13 +1,13 @@
 {
   "id": "vloer-op-palen",
-  "versie": "2026.46.0",
+  "versie": "2026.46.1",
   "naam": {
     "nl": "Bedrijfsvloer op palen (FEM, ponskop, stroken, krimp)",
     "en": "Pile-supported industrial floor (FEM, drop panels, strips, shrinkage)"
   },
   "omschrijving": {
-    "nl": "Betonvloer op verende palen in een raster, gerekend door Open FEM Studio: een stuk vloer met de vloerrand, als vlakke plaat, met een ponskop boven elke paal, met versterkte stroken over de paalrijen of een combinatie. Volle belasting en schaakbord; per zone (veld, kolomstrook, ponskop, strook, rand- en hoekveld) de wapening met de werkelijke dikte: netten, bijleg boven de palen en in de stroken, met de complete wapening rond een paal in 3D. De paalreacties voor de pons, en krimp met het cementgehalte. Met plattegrond en momenten in kleur en in 3D.",
-    "en": "Concrete floor on elastic piles in a grid, calculated by Open FEM Studio: a floor patch including its edge, as a flat slab, with a drop panel over each pile, with thickened strips along the pile rows, or a combination. Full and pattern loading; per zone (field, column strip, drop panel, strip, edge and corner bay) the reinforcement at the actual thickness: meshes, extra top bars over the piles and bottom bars in the strips, with the complete reinforcement around a pile in 3D. The pile reactions for punching, and shrinkage with the cement content. With plan and moments in colour and in 3D."
+    "nl": "Betonvloer op verende palen in een raster, gerekend door Open FEM Studio: een stuk vloer met de vloerrand, als vlakke plaat, met een ponskop boven elke paal, met versterkte stroken over de paalrijen of een combinatie. Volle belasting en schaakbord. De krachtsverdeling (m_x, m_y, m_xy en de doorbuiging) in kleur en in 3D; op negen of tien punten de wapening met het drielagenmodel, met het wringend moment, en de scheurwijdte onder de frequente combinatie (7.3.4); een toelichting op het rekenmodel (lineair-elastisch). Daarnaast de momenten per zone, de complete wapening rond een paal in 3D, de paalreacties voor de pons, en krimp met het cementgehalte.",
+    "en": "Concrete floor on elastic piles in a grid, calculated by Open FEM Studio: a floor patch including its edge, as a flat slab, with a drop panel over each pile, with thickened strips along the pile rows, or a combination. Full and pattern loading. The distribution of forces (m_x, m_y, m_xy and the deflection) in colour and in 3D; at nine or ten points the reinforcement with the three-layer model, including the twisting moment, and the crack width under the frequent combination (7.3.4); a statement of the calculation model (linear elastic). Also the moments per zone, the complete reinforcement around a pile in 3D, the pile reactions for punching, and shrinkage with the cement content."
   },
   "categorie": "beton",
   "status": "concept",
@@ -22,6 +22,8 @@
   "blad": "vloer-op-palen.cpd",
   "beeld": "beeld.webp",
   "minimaleAppVersie": "2026.46.0",
-  "auteurs": ["OpenAEC Foundation"],
+  "auteurs": [
+    "OpenAEC Foundation"
+  ],
   "licentie": "LGPL-3.0-or-later"
 }

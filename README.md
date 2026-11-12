@@ -41,10 +41,11 @@ node scripts/controleer.mjs --app <pad naar de app-repository>
                                          # ook elk blad doorrekenen (Node 24)
 node scripts/fem-antwoorden.mjs --app <pad naar de app-repository>
                                          # de antwoorden van Open FEM Studio
-                                         # vastleggen (modules met @fem)
+                                         # vastleggen (modules met @fem of @kern)
 ```
 
-Een blad met een `@fem`-blok laat de plaat door Open FEM Studio rekenen. Zo'n
+Een blad met een `@fem`-blok laat de plaat door Open FEM Studio rekenen, een
+`@kern`-blok een rekentool daarvan (het drielagenmodel, de scheurwijdte). Zo'n
 module heeft varianten in `test/varianten.json` met hun verwachte uitkomsten, en
 per variant de antwoorden van FEM Studio in `test/<naam>.json.gz`: de controle
 rekent de varianten daarmee door, zonder FEM Studio.
