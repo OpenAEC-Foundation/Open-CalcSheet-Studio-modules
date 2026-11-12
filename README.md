@@ -1,47 +1,47 @@
+**English** · [Nederlands](README.nl.md)
+
 # Open CalcSheet Studio — modules
 
-Rekenmodules voor [Open CalcSheet Studio](https://github.com/OpenAEC-Foundation/Open-CalcSheet-Studio):
-rekenbladen die je in de app als blad aan een project toevoegt. De app haalt de
-catalogus (`index.json`) op en installeert modules via het extensiebeheer.
+Calculation modules for [Open CalcSheet Studio](https://github.com/OpenAEC-Foundation/Open-CalcSheet-Studio):
+calculation sheets you add to a project as a sheet in the app. The app fetches
+the catalogue (`index.json`) and installs modules through its extension manager.
 
-*Calculation modules for Open CalcSheet Studio. Each module is a
-calculation sheet you add to a project; the app reads `index.json` and installs
-modules through its extension manager. Contributions are welcome — see
-[CONTRIBUTING.md](CONTRIBUTING.md).*
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Modules
 
-| Module | Norm | Status |
+| Module | Standard | Status |
 |---|---|---|
-| [Balklaag (houten vloerbalken)](modules/balklaag) | NEN-EN 1995-1-1 + NB | gereed |
+| [Timber joist floor](modules/balklaag) | NEN-EN 1995-1-1 + NB | ready |
 
-## Opbouw
+## Structure
 
 ```
 modules/<id>/
-  module.json   metadata: naam en omschrijving (nl + en), categorie, status, normen, versie
-  <id>.cpd      het rekenblad, in de rekentaal van de app
-  beeld.webp    catalogusbeeld voor het venster "Module toevoegen" (max. 200 kB)
-  README.md     wat de module toetst en welke aannames ze doet
-index.json      catalogus van alle modules, gemaakt met scripts/controleer.mjs
+  module.json   metadata: name and description (nl + en), category, status, standards, version
+  <id>.cpd      the calculation sheet, in the calculation language of the app
+  beeld.webp    catalogue image for the "Add module" window (max. 200 kB)
+  README.md     what the module checks and which assumptions it makes
+index.json      catalogue of all modules, generated with scripts/controleer.mjs
 ```
 
-Een rekenblad met een parametrisch beeld dat in de app is ingebouwd (zoals de
-balklaag), krijgt dat beeld vanzelf: de app herkent het blad aan zijn inhoud.
+A calculation sheet with a parametric view built into the app (such as the
+timber joist floor) gets that view automatically: the app recognises the sheet
+by its content.
 
-## Controleren
+## Checking
 
 ```
-node scripts/controleer.mjs              # metadata, bestanden en index.json
-node scripts/controleer.mjs --schrijf    # index.json opnieuw maken
-node scripts/controleer.mjs --app <pad naar de app-repository>
-                                         # ook elk blad doorrekenen (Node 24)
+node scripts/controleer.mjs              # metadata, files and index.json
+node scripts/controleer.mjs --schrijf    # regenerate index.json
+node scripts/controleer.mjs --app <path to the app repository>
+                                         # also calculate every sheet (Node 24)
 ```
 
-Bij elke pull request draait dezelfde controle op GitHub, inclusief het
-doorrekenen van elk blad met de rekenkern van de app.
+The same check runs on GitHub for every pull request, including calculating
+every sheet with the calculation core of the app.
 
-## Licentie
+## Licence
 
-LGPL-3.0, net als de rest van de OpenAEC-familie. Door bij te dragen ga je
-akkoord dat je module onder deze licentie wordt gepubliceerd.
+LGPL-3.0, like the rest of the OpenAEC family. By contributing you agree that
+your module is published under this licence.
