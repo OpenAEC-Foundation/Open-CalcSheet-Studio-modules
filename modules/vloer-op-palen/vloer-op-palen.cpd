@@ -1,6 +1,9 @@
 "Bedrijfsvloer op palen — FEM, wapening en krimp
 
-'<i>Een betonvloer op palen in een regelmatig raster. Open FEM Studio rekent een stuk vloer met de vloerrand als plaatmodel: een vlakke plaat, met een ponskop boven elke paal, met versterkte stroken over de paalrijen, of een combinatie daarvan. Het blad toont de krachtsverdeling (m<sub>x</sub>, m<sub>y</sub>, m<sub>xy</sub> en de doorbuiging), rekent op negen of tien punten de wapening met het drielagenmodel en de scheurwijdte, en beschrijft het rekenmodel. Daarnaast de momenten per zone, de complete wapening rond een paal in 3D, de paalreacties voor de pons en de krimp van een lange vloer zonder voeg.</i><span class="alleen-scherm"></span>
+'Een betonvloer op palen in een regelmatig raster, gerekend door Open FEM Studio.<span class="alleen-scherm"></span>
+'<details class="alleen-scherm" style="margin:2px 0 8px"><summary style="cursor:pointer; color:#64748b; font-size:0.9em">Toelichting: wat dit blad rekent</summary><i>Een betonvloer op palen in een regelmatig raster. Open FEM Studio rekent een stuk vloer met de vloerrand als plaatmodel: een vlakke plaat, met een ponskop boven elke paal, met versterkte stroken over de paalrijen, of een combinatie daarvan. Het blad toont de krachtsverdeling (m<sub>x</sub>, m<sub>y</sub>, m<sub>xy</sub> en de doorbuiging), rekent op negen of tien punten de wapening met het drielagenmodel en de scheurwijdte, en beschrijft het rekenmodel. Daarnaast de momenten per zone, de complete wapening rond een paal in 3D, de paalreacties voor de pons en de krimp van een lange vloer zonder voeg.</i></details><span class="alleen-scherm"></span>
+'<div class="alleen-scherm" style="margin:4px 0 10px; padding:8px 12px; border:1px solid #e5e7eb; border-radius:6px; background:#f8fafc; font-size:0.92em; line-height:1.7"><b>Naar</b> &nbsp;<a href="#vop-invoer" style="color:#b45309; text-decoration:none">invoer</a> · <a href="#vop-model" style="color:#b45309; text-decoration:none">rekenmodel</a> · <a href="#vop-kracht" style="color:#b45309; text-decoration:none">krachtsverdeling</a> · <a href="#vop-wapening" style="color:#b45309; text-decoration:none">wapening</a> · <a href="#vop-punt" style="color:#b45309; text-decoration:none">per punt</a> · <a href="#vop-scheur" style="color:#b45309; text-decoration:none">scheurwijdte</a> · <a href="#vop-bijleg" style="color:#b45309; text-decoration:none">bijleg in 3D</a> · <a href="#vop-paal" style="color:#b45309; text-decoration:none">paalreactie en pons</a> · <a href="#vop-fnl" style="color:#b45309; text-decoration:none">FNL</a> · <a href="#vop-krimp" style="color:#b45309; text-decoration:none">krimp</a> &nbsp;→ <a href="#vop-samenvatting" style="color:#b45309; font-weight:700; text-decoration:none">samenvatting en eindoordeel</a></div><span class="alleen-scherm"></span>
+'<a id="vop-invoer"></a><span class="alleen-scherm"></span>
 # Raster en vloer
 
 L_x = ?{3.6}*(m)', paalafstand x<span class="kolom-3"></span>'
@@ -17,23 +20,37 @@ k_paal = ?{150}*(MN/m)', veer per paal<span class="kolom-3"></span>'
   C28/35 = 28
   C35/45 = 35
 @end
-'<i>Het model is een vloer van n × n velden met de vloerrand rondom: hoekvelden, randvelden en binnenvelden. Voor een grotere vloer gelden de binnenvelden voor het binnengebied. De veer per paal is de stijfheid van paal en grond samen, uit het funderingsadvies: een stijve paal geeft grotere steunmomenten, een slappe paal grotere veldmomenten.</i><span class="alleen-scherm"></span>
+'<details class="alleen-scherm" style="margin:2px 0 8px"><summary style="cursor:pointer; color:#64748b; font-size:0.9em">Toelichting: het model en de veer per paal</summary><i>Het model is een vloer van n × n velden met de vloerrand rondom: hoekvelden, randvelden en binnenvelden. Voor een grotere vloer gelden de binnenvelden voor het binnengebied. De veer per paal is de stijfheid van paal en grond samen, uit het funderingsadvies: een stijve paal geeft grotere steunmomenten, een slappe paal grotere veldmomenten.</i></details><span class="alleen-scherm"></span>
 
 @select ponskop "Ponskop boven elke paal"
   nee = 0
   ja = 1
 @end
+#if ponskop ≡ 1
 b_k = ?{1000}*(mm)', ponskop, breedte<span class="kolom-4"></span>'
 t_k = ?{400}*(mm)', ponskop, dikte<span class="kolom-4"></span>'
+#else
+#hide
+b_k = 1000 mm
+t_k = 400 mm
+#show
+#end if
 @select stroken "Versterkte stroken over de paalrijen"
   geen = 0
   in x = 1
   in y = 2
   in x en y = 3
 @end
+#if stroken > 0
 b_s = ?{800}*(mm)', strook, breedte<span class="kolom-4"></span>'
 t_s = ?{350}*(mm)', strook, dikte<span class="kolom-4"></span>'
-'<i>Een ponskop is een vierkante verdikking onder de vloer, op de paal; een strook is een verdikking onder een hele paalrij. De bovenkant van de vloer blijft vlak. Ponskop en stroken zijn te combineren; waar een kop over een strook ligt, telt de dikste.</i><span class="alleen-scherm"></span>
+#else
+#hide
+b_s = 800 mm
+t_s = 350 mm
+#show
+#end if
+'<details class="alleen-scherm" style="margin:2px 0 8px"><summary style="cursor:pointer; color:#64748b; font-size:0.9em">Toelichting: ponskop en stroken</summary><i>Een ponskop is een vierkante verdikking onder de vloer, op de paal; een strook is een verdikking onder een hele paalrij. De bovenkant van de vloer blijft vlak. Ponskop en stroken zijn te combineren; waar een kop over een strook ligt, telt de dikste.</i></details><span class="alleen-scherm"></span>
 
 #hide
 f_ck = betonklasse*N/mm^2
@@ -71,10 +88,11 @@ a_m = max(min(L_x; L_y)/12; max(B_x; B_y)/(84 - 6*(n_r + 1)))
 #if a_m > min(L_x; L_y)/8
 '<b style="color:#b91c1c">Let op:</b> de maas ('round(a_m/mm)' mm) is grover dan L/8; kies minder velden in het model.
 #end if
-f_ck'<span class="kolom-4"></span>'
-f_ctm'<span class="kolom-4"></span>'
-E_cm'<span class="kolom-4"></span>'
-f_yd'<span class="kolom-4"></span>'
+f_ck'<span class="kolom-4"></span><span class="alleen-afdruk"></span>'
+f_ctm'<span class="kolom-4"></span><span class="alleen-afdruk"></span>'
+E_cm'<span class="kolom-4"></span><span class="alleen-afdruk"></span>'
+f_yd'<span class="kolom-4"></span><span class="alleen-afdruk"></span>'
+'<span style="color:#475569">f<sub>ck</sub> = 'f_ck/(N/mm^2)' · f<sub>ctm</sub> = 'round(f_ctm/(N/mm^2); 2)' · E<sub>cm</sub> = 'round(E_cm/(N/mm^2))' · f<sub>yd</sub> = 'round(f_yd/(N/mm^2); 1)' N/mm²</span><span class="alleen-scherm"></span>
 
 # Belastingen
 
@@ -90,7 +108,7 @@ f_q = q_k/(kN/m^2)
 #show
 γ_Gd = max(γ_Ga; γ_G)', permanent (6.10a, opslag ψ<sub>0</sub> = 1,0)<span class="kolom-3"></span>'
 γ_Q', veranderlijk<span class="kolom-3"></span>'
-'<i>Vier belastinggevallen: eigen gewicht (met de koppen en stroken), afwerking, en het veranderlijke deel op de velden van schaakbord 1 en van schaakbord 2. Afwerking en schaakbord rekent FEM Studio met 1 kN/m²; de combinaties vermenigvuldigen dat met g<sub>afw</sub> en q<sub>k</sub>, zodat een andere last niet opnieuw gerekend hoeft te worden. Volle belasting is schaakbord 1 plus 2. De frequente waarde ψ<sub>1</sub> geldt voor de scheurwijdte: de nationale bijlage toetst die onder de frequente combinatie.</i><span class="alleen-scherm"></span>
+'<details class="alleen-scherm" style="margin:2px 0 8px"><summary style="cursor:pointer; color:#64748b; font-size:0.9em">Toelichting: de belastinggevallen en combinaties</summary><i>Vier belastinggevallen: eigen gewicht (met de koppen en stroken), afwerking, en het veranderlijke deel op de velden van schaakbord 1 en van schaakbord 2. Afwerking en schaakbord rekent FEM Studio met 1 kN/m²; de combinaties vermenigvuldigen dat met g<sub>afw</sub> en q<sub>k</sub>, zodat een andere last niet opnieuw gerekend hoeft te worden. Volle belasting is schaakbord 1 plus 2. De frequente waarde ψ<sub>1</sub> geldt voor de scheurwijdte: de nationale bijlage toetst die onder de frequente combinatie.</i></details><span class="alleen-scherm"></span>
 
 #hide
 'Plattegrond: 1 m is p_s px; p_X en p_Y geven de plek in het beeld.
@@ -219,6 +237,7 @@ w_pt(p) = if(K_pt(p) ≡ 1; " ponskop"; if(SS_pt(p) ≡ 1; " strook"; ""))
 '</svg>'
 #show
 
+'<a id="vop-model"></a><span class="alleen-scherm"></span>
 # Rekenmodel (Open FEM Studio)
 
 @select krachtsverdeling "Krachtsverdeling in het rekenmodel"
@@ -228,8 +247,8 @@ w_pt(p) = if(K_pt(p) ≡ 1; " ponskop"; if(SS_pt(p) ≡ 1; " strook"; ""))
 '<b>Rekenmodel.</b> De krachtsverdeling komt uit een <b>lineair-elastische</b> plaatberekening door Open FEM Studio (<code>solve_open_fem_3d</code>): vierhoekige schaalelementen (MITC4, Mindlin-Reissner), maas 'round(a_m/mm)' mm, ongescheurde stijfheid met E<sub>cm</sub> en ν = 'ν'. Geometrisch en fysisch lineair: scheurvorming en de herverdeling daardoor zitten er niet in. Een paal is een lineaire veer k, verdeeld over de paalkop (ook op trek); ponskoppen en stroken zijn platen met hun eigen dikte in hetzelfde middenvlak; de vloerrand is vrij.
 'Belastinggevallen: eigen gewicht, afwerking en twee schaakborden. De combinaties zijn sommen daarvan: UGT (6.10a, opslag ψ<sub>0</sub> = 1,0) bij volle belasting en per schaakbord, frequent (ψ<sub>1</sub> = 'ψ_1') voor de scheurwijdte en karakteristiek voor de doorbuiging.
 'De wapening volgt per punt uit m<sub>x</sub>, m<sub>y</sub> en m<sub>xy</sub> met het drielagenmodel (<code>solve_native_fem</code>, <code>threeLayer</code>: de momenten als krachten in twee buitenlagen, per laag NEN-EN 1992-1-1 bijlage F); de scheurwijdte volgens 7.3.4 (<code>crackWidth</code>) met de staalspanning uit hetzelfde model onder de frequente combinatie (nationale bijlage bij 7.3.1(5)).
-'<i>Fysisch niet-lineair (FNL): kies je dat hierboven, dan rekent Open FEM Studio dezelfde vloer ook met <code>compute_plate_analysis</code> (geometrisch lineair, fysisch niet-lineair): beton volgens NEN-EN 1992-1-1 3.1.5, B500B, trekverstijving per richting volgens 7.4.3 (β = 1,0: kortdurende belasting), de netten en de bijleg boven de palen als wapeningslagen en de last in stappen. Elke combinatie rekent vanaf de onbelaste vloer. Zo blijkt of de gekozen wapening het draagvermogen haalt, met de staalspanning en de doorbuiging van de gescheurde vloer: zie Controle fysisch niet-lineair. De wapening per zone en per punt blijft op de lineaire krachtsverdeling, want de niet-lineaire berekening geeft de uiterste waarden en geen verdeling over de vloer. Een vloer met ponskop of stroken rekent FNL nog niet: die plaat heeft één dikte.</i>
-'<i>Wat lineair-elastisch betekent voor de uitkomst: de wapening op de elastische momenten is een evenwichtsstelsel en daarmee een veilige verdeling, maar de pieken boven de palen zijn hoger en de veldmomenten lager dan in een gescheurde vloer; de doorbuiging is die van de ongescheurde plaat zonder kruip, een ondergrens. Het drielagenmodel is een deeltoets: dwarskracht en pons (module Pons), verankering en detaillering horen er niet bij.</i>
+'<details class="alleen-scherm" style="margin:2px 0 8px"><summary style="cursor:pointer; color:#64748b; font-size:0.9em">Toelichting: de controle fysisch niet-lineair (FNL)</summary><i>Fysisch niet-lineair (FNL): kies je dat hierboven, dan rekent Open FEM Studio dezelfde vloer ook met <code>compute_plate_analysis</code> (geometrisch lineair, fysisch niet-lineair): beton volgens NEN-EN 1992-1-1 3.1.5, B500B, trekverstijving per richting volgens 7.4.3 (β = 1,0: kortdurende belasting), de netten en de bijleg boven de palen als wapeningslagen en de last in stappen. Elke combinatie rekent vanaf de onbelaste vloer. Zo blijkt of de gekozen wapening het draagvermogen haalt, met de staalspanning en de doorbuiging van de gescheurde vloer: zie Controle fysisch niet-lineair. De wapening per zone en per punt blijft op de lineaire krachtsverdeling, want de niet-lineaire berekening geeft de uiterste waarden en geen verdeling over de vloer. Een vloer met ponskop of stroken rekent FNL nog niet: die plaat heeft één dikte.</i></details><span class="alleen-scherm"></span>
+'<details class="alleen-scherm" style="margin:2px 0 8px"><summary style="cursor:pointer; color:#64748b; font-size:0.9em">Toelichting: wat lineair-elastisch betekent</summary><i>Wat lineair-elastisch betekent voor de uitkomst: de wapening op de elastische momenten is een evenwichtsstelsel en daarmee een veilige verdeling, maar de pieken boven de palen zijn hoger en de veldmomenten lager dan in een gescheurde vloer; de doorbuiging is die van de ongescheurde plaat zonder kruip, een ondergrens. Het drielagenmodel is een deeltoets: dwarskracht en pons (module Pons), verankering en detaillering horen er niet bij.</i></details><span class="alleen-scherm"></span>
 #pre
 'Het model in Open FEM Studio. Momenten in kNm/m, positief is trek onder.
 @fem vloer
@@ -331,6 +350,7 @@ R_n(r; s) = N_1(r; s; a_r + max(e_k; e_sa(r)); a_r + L_b(r)/4)
 #show
 #end if
 
+'<a id="vop-kracht"></a><span class="alleen-scherm"></span>
 # Krachtsverdeling
 
 #pre
@@ -375,7 +395,7 @@ R_min = min(vloer_UGT_vol_R_min; vloer_UGT_sb1_R_min; vloer_UGT_sb2_R_min; vloer
 '<b style="color:#b91c1c">Let op:</b> een paal trekt (R<sub>min</sub> = 'round(R_min/kN; 1)' kN). De veer in het model houdt de vloer daar vast; kan de paal geen trek opnemen, dan klopt de krachtsverdeling niet.
 #end if
 #pre
-'<i>De krachtsverdeling in 3D, met de grootheid en de combinatie die hierboven gekozen zijn: elk punt op de hoogte van zijn waarde, trek onder en doorbuiging omlaag. Het wringend moment m<sub>xy</sub> is het grootst rond de palen aan de rand en in de hoekvelden; de doorbuiging is die van de ongescheurde plaat. Draai het beeld met de muis.</i>
+'<details class="alleen-scherm" style="margin:2px 0 8px"><summary style="cursor:pointer; color:#64748b; font-size:0.9em">Toelichting: het 3D-beeld</summary><i>De krachtsverdeling in 3D, met de grootheid en de combinatie die hierboven gekozen zijn: elk punt op de hoogte van zijn waarde, trek onder en doorbuiging omlaag. Het wringend moment m<sub>xy</sub> is het grootst rond de palen aan de rand en in de hoekvelden; de doorbuiging is die van de ongescheurde plaat. Draai het beeld met de muis.</i></details>
 @3d
 eenheid m
 camera iso
@@ -438,15 +458,17 @@ M_rb = fem_strook(vloer; "UGT_vol"; "mx"; x_r; y_0 - L_y/2; x_r; y_0 + L_y/2)*L_
 M_vv = fem_strook(vloer; "UGT_vol"; "mx"; x_m; 0 m; x_m; B_y)*B_y
 M_lv = fem_strook(vloer; "UGT_vol"; "mx"; x_l; 0 m; x_l; B_y)*B_y
 M_rv = fem_strook(vloer; "UGT_vol"; "mx"; x_r; 0 m; x_r; B_y)*B_y
+stat_b = (M_vb - (M_lb + M_rb)/2)/((q_d*L_y + q_s*st_x*b_s)*l_n^2/8)
+stat_v = (M_vv - (M_lv + M_rv)/2)/((q_d*B_y + q_s*W_s)*l_n^2/8)
 #pre
-stat_b = (M_vb - (M_lb + M_rb)/2)/((q_d*L_y + q_s*st_x*b_s)*l_n^2/8)', statica binnenveld over L<sub>y</sub>'
-stat_v = (M_vv - (M_lv + M_rv)/2)/((q_d*B_y + q_s*W_s)*l_n^2/8)', over de hele vloerbreedte'
-'<i>De statica van het binnenveld: het veldmoment min het gemiddelde steunmoment, over de breedte, gedeeld door w·l<sub>n</sub><sup>2</sup>/8, met l<sub>n</sub> = 'round(l_n/mm)' mm tussen de doorsneden één maas buiten de paalkop of de verdikking. Over de hele vloerbreedte is dit het evenwicht en hoort het 1 te zijn; over één veldbreedte gaat er ook wat dwarskracht over de lengtelijnen. Vlak naast de paal komt het lager uit, omdat FEM Studio de momenten op een knoop middelt.</i>
+'Evenwicht van het binnenveld (statica, hoort 1 te zijn): <b>'round(stat_v; 3)'</b> over de hele vloerbreedte, 'round(stat_b; 3)' over één veldbreedte.
+'<details class="alleen-scherm" style="margin:2px 0 8px"><summary style="cursor:pointer; color:#64748b; font-size:0.9em">Toelichting: de statica</summary><i>De statica van het binnenveld: het veldmoment min het gemiddelde steunmoment, over de breedte, gedeeld door w·l<sub>n</sub><sup>2</sup>/8, met l<sub>n</sub> = 'round(l_n/mm)' mm tussen de doorsneden één maas buiten de paalkop of de verdikking. Over de hele vloerbreedte is dit het evenwicht en hoort het 1 te zijn; over één veldbreedte gaat er ook wat dwarskracht over de lengtelijnen. Vlak naast de paal komt het lager uit, omdat FEM Studio de momenten op een knoop middelt.</i></details>
 #show
 #else
 '<b style="color:#b91c1c">Nog niet gerekend.</b> De krachtsverdeling volgt uit Open FEM Studio.
 #end if
 
+'<a id="vop-wapening"></a><span class="alleen-scherm"></span>
 # Wapening
 
 ø_o = ?{12}*(mm)', net onder, Ø<span class="kolom-4"></span>'
@@ -455,36 +477,22 @@ s_o = ?{150}*(mm)', h.o.h.<span class="kolom-4"></span>'
 s_b = ?{150}*(mm)', h.o.h.<span class="kolom-4"></span>'
 ø_bb = ?{12}*(mm)', bijleg boven de palen, Ø<span class="kolom-4"></span>'
 s_bb = ?{150}*(mm)', h.o.h.<span class="kolom-4"></span>'
+#if stroken > 0
 ø_bs = ?{16}*(mm)', bijleg onder in de stroken, Ø<span class="kolom-4"></span>'
 s_bs = ?{150}*(mm)', h.o.h.<span class="kolom-4"></span>'
+#else
+#hide
+ø_bs = 16 mm
+s_bs = 150 mm
+#show
+#end if
 w_lim = ?{0.3}*(mm)', toelaatbare scheurwijdte w<sub>max</sub><span class="kolom-4"></span>'
 @select duur "Belastingsduur voor de scheurwijdte"
   langdurend (k_t = 0,4) = 0
   kortdurend (k_t = 0,6) = 1
 @end
-'<i>De toelaatbare scheurwijdte volgens de nationale bijlage bij 7.3.1(5) (tabel 7.1N), onder de frequente combinatie: 0,4 mm in X0 en XC1, 0,3 mm in XC2 tot en met XC4, 0,2 mm in XD en XS. Dezelfde waarde geldt verderop voor de scheurwijdte door krimp.</i><span class="alleen-scherm"></span>
-#pre
-@select punt_uit "Punt van de wapening dat op het scherm is uitgeschreven"
-  het maatgevende punt = 0
-  1 binnenveld midden = 1
-  2 binnenveld paallijn = 2
-  3 binnenpaal naast de paalkop = 3
-  4 randveld midden = 4
-  5 randveld paallijn = 5
-  6 randstrook vrije rand = 6
-  7 hoekveld midden = 7
-  8 hoekveld diagonaal bij de paal = 8
-  9 randpaal naast de paalkop = 9
-  10 naast de verdikking bij de paal (als die er is) = 10
-@end
-@select ponswap "Ponswapening rond de paal (in beeld)"
-  geen = 0
-  deuvelrails = 1
-@end
-ø_pw = ?{12}*(mm)', ponswapening, Ø'
-n_pw = ?{3}', aantal omtrekken'
-#show
-'<i>De netten liggen over de hele vloer, de x-staven buiten. De bijleg boven ligt in beide richtingen over de kolomstrook (een half veld breed) boven elke paal; de bijleg onder ligt onder in de stroken. Hoeveel ponswapening nodig is, rekent de module Pons; hier staat ze alleen in beeld.</i><span class="alleen-scherm"></span>
+'<details class="alleen-scherm" style="margin:2px 0 8px"><summary style="cursor:pointer; color:#64748b; font-size:0.9em">Toelichting: toelaatbare scheurwijdte (tabel 7.1N)</summary><i>De toelaatbare scheurwijdte volgens de nationale bijlage bij 7.3.1(5) (tabel 7.1N), onder de frequente combinatie: 0,4 mm in X0 en XC1, 0,3 mm in XC2 tot en met XC4, 0,2 mm in XD en XS. Dezelfde waarde geldt verderop voor de scheurwijdte door krimp.</i></details><span class="alleen-scherm"></span>
+'<details class="alleen-scherm" style="margin:2px 0 8px"><summary style="cursor:pointer; color:#64748b; font-size:0.9em">Toelichting: ligging van netten en bijleg</summary><i>De netten liggen over de hele vloer, de x-staven buiten. De bijleg boven ligt in beide richtingen over de kolomstrook (een half veld breed) boven elke paal; de bijleg onder ligt onder in de stroken. Hoeveel ponswapening nodig is, rekent de module Pons; hier staat ze alleen in beeld.</i></details><span class="alleen-scherm"></span>
 
 #hide
 'Per meter breedte (mm²/mm), en d van de binnenste laag bij dikte t.
@@ -570,8 +578,24 @@ l_by = min(2*ceil((z_y + d_b(h) + l_bd)/(50 mm))*50 mm; L_y) to m
 h_st = h - 2*c_nom - 2*ø_o - 2*ø_b
 #show
 
+'<a id="vop-punt"></a><span class="alleen-scherm"></span>
 # Wapening per punt (drielagenmodel)
 
+#pre
+@select punt_uit "Punt van de wapening dat op het scherm is uitgeschreven"
+  het maatgevende punt = 0
+  1 binnenveld midden = 1
+  2 binnenveld paallijn = 2
+  3 binnenpaal naast de paalkop = 3
+  4 randveld midden = 4
+  5 randveld paallijn = 5
+  6 randstrook vrije rand = 6
+  7 hoekveld midden = 7
+  8 hoekveld diagonaal bij de paal = 8
+  9 randpaal naast de paalkop = 9
+  10 naast de verdikking bij de paal (als die er is) = 10
+@end
+#show
 #hide
 'De buitenlagen van het drielagenmodel liggen om het hart van de twee staaflagen van een net: a is de afstand van dat hart tot
 'het vlak, de laag is 2·a dik en de arm tussen de lagen z = t − a_onder − a_boven. In een strook ligt de bijleg onderin.
@@ -765,12 +789,13 @@ d_u = if(s_u ≡ 1; t_pt(p_u) - a_lo(p_u) - if(SS_pt(p_u) ≡ 1; 0 mm; ø_o/2); 
 #pre
 ctl_3 = (A_hx + A_hy)/((A_fx + A_fy)*(1 mm^2))', met de hand gedeeld door Open FEM Studio: hoort 1 te zijn'
 A_09 = max(s_u*m_xu + abs(m_xyu); 0 kN)*b_s1/(0.9*d_u*f_yd) to mm^2', per meter, ter vergelijking de oude aanpak z = 0,9·d in x, met m<sub>x</sub> + |m<sub>xy</sub>| en d = 'round(d_u/mm)' mm'
-'<i>Het drielagenmodel rekent met de arm tussen de twee netten ('round(z_u/mm)' mm), kleiner dan 0,9·d ('round(0.9*d_u/mm)' mm): het vraagt daardoor meer wapening dan de oude aanpak, en het telt het wringend moment mee.</i>
+'<details class="alleen-scherm" style="margin:2px 0 8px"><summary style="cursor:pointer; color:#64748b; font-size:0.9em">Toelichting: arm van het drielagenmodel</summary><i>Het drielagenmodel rekent met de arm tussen de twee netten ('round(z_u/mm)' mm), kleiner dan 0,9·d ('round(0.9*d_u/mm)' mm): het vraagt daardoor meer wapening dan de oude aanpak, en het telt het wringend moment mee.</i></details>
 #show
 #else
 '<b style="color:#b91c1c">Nog niet gerekend.</b> De wapening per punt volgt uit het drielagenmodel van Open FEM Studio en staat hier zodra het antwoord er is. Zonder antwoord staat er geen uitkomst.
 #end if
 
+'<a id="vop-scheur"></a><span class="alleen-scherm"></span>
 # Scheurwijdte (belasting, frequent)
 
 #if ger_3 ≡ 1
@@ -915,8 +940,24 @@ ctl_w = w_hu/(take(k_wu; V_w)*(1 mm))', met de hand gedeeld door Open FEM Studio
 #else
 '<b style="color:#b91c1c">Nog niet gerekend.</b> De scheurwijdte rekent met de staalspanning uit het drielagenmodel.
 #end if
+'<a id="vop-bijleg"></a><span class="alleen-scherm"></span>
 # Bijleg en wapening rond een paal
 
+#pre
+@select ponswap "Ponswapening rond de paal (in beeld)"
+  geen = 0
+  deuvelrails = 1
+@end
+#if ponswap ≡ 1
+ø_pw = ?{12}*(mm)', ponswapening, Ø'
+n_pw = ?{3}', aantal omtrekken'
+#else
+#hide
+ø_pw = 12 mm
+n_pw = 3
+#pre
+#end if
+#show
 l_bx', bijleg boven, lengte in x (over de paal)<span class="kolom-2"></span>'
 l_by', lengte in y<span class="kolom-2"></span>'
 h_st', stoelen tussen de netten (h.o.h. 1 m)<span class="kolom-2"></span>'
@@ -1070,6 +1111,7 @@ buis {{r_pw(jj)*cos(k*π/4)}} {{r_pw(jj)*sin(k*π/4)}} {{-c_nom - 0.6*ø_pw}} {{
 #end if
 '<i>De wapening rond een binnenpaal, een veld groot, met de beton als omtrek; de netten lopen door over de hele vloer. Draai het beeld met de muis.</i><span class="alleen-scherm"></span>
 #pre
+'<a id="vop-zones"></a><span class="alleen-scherm"></span>
 # Momenten per zone (ter vergelijking)
 '<i>De momenten gemiddeld over de zones van NEN-EN 1992-1-1 bijlage I, met z = 0,9·d: de aanpak van voor het drielagenmodel, ter vergelijking en als tweede toets in de samenvatting.</i>
 '<table class="alleen-scherm" style="width:100%; border-collapse:collapse; font-size:0.9em;">
@@ -1094,12 +1136,13 @@ buis {{r_pw(jj)*cos(k*π/4)}} {{r_pw(jj)*sin(k*π/4)}} {{-c_nom - 0.6*ø_pw}} {{
 #end if
 '<tr style="border-bottom:1px solid #e5e7eb; color:#6b7280;"><td style="padding:1px 6px;">Piek op de paal</td><td style="text-align:right; padding:1px 6px;">'round(m_piek/kN; 1)'</td><td colspan="4" style="padding:1px 6px;">begrensd op R<sub>binnen</sub>/5 en getoetst bij de paalreactie</td></tr>
 '</table>
-'<i>m<sub>Ed</sub> is de omhullende over volle belasting en beide schaakborden, gemiddeld over de zone (kolomstrook een half veld breed op de paallijn, NEN-EN 1992-1-1 bijlage I), in de maatgevende richting; d van de binnenste laag bij de werkelijke dikte t, z = 0,9·d. Het wringend moment telt hier niet mee; in de punten hierboven wel.</i>
+'<details class="alleen-scherm" style="margin:2px 0 8px"><summary style="cursor:pointer; color:#64748b; font-size:0.9em">Toelichting: hoe m<sub>Ed</sub> per zone is bepaald</summary><i>m<sub>Ed</sub> is de omhullende over volle belasting en beide schaakborden, gemiddeld over de zone (kolomstrook een half veld breed op de paallijn, NEN-EN 1992-1-1 bijlage I), in de maatgevende richting; d van de binnenste laag bij de werkelijke dikte t, z = 0,9·d. Het wringend moment telt hier niet mee; in de punten hierboven wel.</i></details>
 #show
 #else
 '<b style="color:#b91c1c">Nog niet gerekend.</b> De momenten, de wapening per zone, de bijleg en de paalreacties volgen uit Open FEM Studio en staan hier zodra het antwoord er is. Zonder antwoord staan ze er niet: er is geen terugval op een andere rekenkern.
 #end if
 
+'<a id="vop-paal"></a><span class="alleen-scherm"></span>
 # Paalreactie en pons
 
 #if gerekend ≡ 1
@@ -1132,11 +1175,12 @@ m_pk,d = min(m_piek; R_binnen/5)', piekmoment boven de binnenpaal, hooguit R<sub
 UC_pk = m_pk,d/m_Rbb(t_pk)', net boven met bijleg, t = 't_pk/mm' mm, m<sub>Rd</sub> = 'round(m_Rbb(t_pk)/kN; 1)' kNm/m<span class="kolom-2"></span>'
 w_BGT', grootste doorbuiging, karakteristiek (ongescheurd en zonder kruip: een ondergrens)<span class="kolom-2"></span>'
 'Pons boven de paal met de module Pons: V<sub>Ed</sub> = R<sub>binnen</sub>, R<sub>rand</sub> of R<sub>hoek</sub> met de ligging binnen, rand of hoek, en de plaatdikte bij de paal t = 't_p/mm' mm.
-'<i>Voeg de module Pons toe en typ in het veld V<sub>Ed</sub> de verwijzing naar dit blad, met het kenmerk uit de projectboom: #1.R_binnen als dit blad #1 is (of #1.R_rand, #1.R_hoek, #1.R_paal).</i><span class="alleen-scherm"></span>
+'<details class="alleen-scherm" style="margin:2px 0 8px"><summary style="cursor:pointer; color:#64748b; font-size:0.9em">Toelichting: pons rekenen met de module Pons</summary><i>Voeg de module Pons toe en typ in het veld V<sub>Ed</sub> de verwijzing naar dit blad, met het kenmerk uit de projectboom: #1.R_binnen als dit blad #1 is (of #1.R_rand, #1.R_hoek, #1.R_paal).</i></details><span class="alleen-scherm"></span>
 #else
 '<b style="color:#b91c1c">Nog niet gerekend.</b> De paalreacties volgen uit Open FEM Studio.
 #end if
 
+'<a id="vop-fnl"></a><span class="alleen-scherm"></span>
 # Controle fysisch niet-lineair (GL+FNL)
 
 #hide
@@ -1260,12 +1304,13 @@ w_fnl', grootste doorbuiging, karakteristiek, gescheurd (zonder kruip); lineair 
 R_fnl = fnl.reaction_max_kn*kN', grootste paalreactie (UGT), gescheurd; lineair R<sub>paal</sub> = 'round(R_paal/kN)' kN<span class="kolom-2"></span>'
 '<i>De gescheurde vloer verdeelt de last anders over de palen. Neem voor de pons de grootste van R<sub>fnl</sub> en de lineaire reactie van die paal.</i>
 #end if
-'<i>De benutting is die van het vloeicriterium per element (Johansen): 1 is de rand van het draagvermogen van de doorsnede. Een combinatie die bezwijkt, haalt de volle last niet; dan is de benutting 1/λ. FEM Studio stopt bij het eerste punt dat het criterium haalt, zonder plastische herverdeling. Naast de paal is dat een lokale piek die met een fijnere maas hoger uitvalt: de benutting is een veilige ondergrens van het draagvermogen bij deze maas (die van het lineaire model), geen oordeel dat los van de maas geldt. Bezwijken naast de paal betekent hier dat de eerste doorsnede haar grens bereikt, niet dat de vloer bezwijkt. De staalspanning frequent (vol) is ter vergelijking met de scheurwijdte hierboven, die met het drielagenmodel op de lineaire momenten rekent. Niet in deze berekening: pons, dwarskracht en de scheurwijdte zelf.</i>
+'<details class="alleen-scherm" style="margin:2px 0 8px"><summary style="cursor:pointer; color:#64748b; font-size:0.9em">Toelichting: wat de benutting betekent</summary><i>De benutting is die van het vloeicriterium per element (Johansen): 1 is de rand van het draagvermogen van de doorsnede. Een combinatie die bezwijkt, haalt de volle last niet; dan is de benutting 1/λ. FEM Studio stopt bij het eerste punt dat het criterium haalt, zonder plastische herverdeling. Naast de paal is dat een lokale piek die met een fijnere maas hoger uitvalt: de benutting is een veilige ondergrens van het draagvermogen bij deze maas (die van het lineaire model), geen oordeel dat los van de maas geldt. Bezwijken naast de paal betekent hier dat de eerste doorsnede haar grens bereikt, niet dat de vloer bezwijkt. De staalspanning frequent (vol) is ter vergelijking met de scheurwijdte hierboven, die met het drielagenmodel op de lineaire momenten rekent. Niet in deze berekening: pons, dwarskracht en de scheurwijdte zelf.</i></details><span class="alleen-scherm"></span>
 #else
 '<b style="color:#b91c1c">Nog niet gerekend.</b> De niet-lineaire berekening volgt uit Open FEM Studio en staat hier zodra het antwoord er is.
 #end if
 #end if
 
+'<a id="vop-krimp"></a><span class="alleen-scherm"></span>
 # Krimp
 
 L_vloer = ?{40}*(m)', lengte van de vloer zonder voeg<span class="kolom-3"></span>'
@@ -1287,7 +1332,7 @@ RH = ?{60}', relatieve vochtigheid (%)<span class="kolom-3"></span>'
     R_ax = 0
     #show
 #end if
-'<i>Een vloer op palen ligt op grond die te slap is om op te funderen; de palen buigen mee en houden de vloer niet vast. Hij krimpt dan vrij: er ontstaat geen trek en geen krimpscheur, en alleen de verkorting telt, voor de voegen en de aansluitingen aan de randen. Kies verhinderd als de vloer aan wanden, poeren of een bestaande vloer vastzit. De vloer droogt aan de bovenkant uit. Minder cement (en minder water) geeft minder cementlijm en minder krimp. De Eurocode kent het cementgehalte niet; ACI 209R-92 wel, met de factor 0,75 + 0,00061·c.</i><span class="alleen-scherm"></span>
+'<details class="alleen-scherm" style="margin:2px 0 8px"><summary style="cursor:pointer; color:#64748b; font-size:0.9em">Toelichting: vrije of verhinderde krimp</summary><i>Een vloer op palen ligt op grond die te slap is om op te funderen; de palen buigen mee en houden de vloer niet vast. Hij krimpt dan vrij: er ontstaat geen trek en geen krimpscheur, en alleen de verkorting telt, voor de voegen en de aansluitingen aan de randen. Kies verhinderd als de vloer aan wanden, poeren of een bestaande vloer vastzit. De vloer droogt aan de bovenkant uit. Minder cement (en minder water) geeft minder cementlijm en minder krimp. De Eurocode kent het cementgehalte niet; ACI 209R-92 wel, met de factor 0,75 + 0,00061·c.</i></details><span class="alleen-scherm"></span>
 
 #hide
 'NEN-EN 1992-1-1 bijlage B: uitdrogingskrimp en autogene krimp, eindwaarde.
@@ -1341,6 +1386,7 @@ UC_Amin = if(krimp_verh ≡ 2; A_s,min/(A_o + A_b); 0)
     'Vrije krimp: de vloer wordt niet vastgehouden, dus er ontstaat geen trek door krimp. Geen minimumwapening volgens (7.1) en geen krimpscheur; de verkorting ΔL hierboven bepaalt de voegen en de aansluitingen aan de randen.
 #end if
 
+'<a id="vop-samenvatting"></a><span class="alleen-scherm"></span>
 # Samenvatting
 
 #hide
