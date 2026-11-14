@@ -917,7 +917,7 @@
       },
       "verwacht": {
         "UC_fnl": [
-          1.0124
+          1.0122
         ],
         "UC_σs": [
           0.7696
@@ -934,27 +934,60 @@
           "kN"
         ],
         "UC_max": [
-          1.0124
+          1.0122
         ]
       }
     },
     {
       "naam": "fnl-ponskop",
-      "omschrijving": "controle fysisch niet-lineair met een ponskop: die kan FNL nog niet, de lineaire toetsen gelden wel",
+      "omschrijving": "controle fysisch niet-lineair met een ponskop: de kop is een zone met eigen dikte en eigen gewicht",
       "invoer": {
         "krachtsverdeling": "1",
         "ponskop": "1"
       },
-      "antwoordenVan": "ponskop",
       "verwacht": {
-        "ger_fnl": [
-          0
+        "n_z": [
+          25
         ],
         "UC_fnl": [
-          0
+          0.85182
+        ],
+        "UC_σs": [
+          0.77445
+        ],
+        "w_fnl": [
+          2.874,
+          "mm"
         ],
         "UC_max": [
           0.91636
+        ]
+      }
+    },
+    {
+      "naam": "fnl-alles",
+      "omschrijving": "controle fysisch niet-lineair met ponskop en stroken in x en y: zones zonder overlap, bijleg onder in de stroken",
+      "invoer": {
+        "krachtsverdeling": "1",
+        "ponskop": "1",
+        "stroken": "3"
+      },
+      "verwacht": {
+        "n_z": [
+          209
+        ],
+        "UC_fnl": [
+          0.67317
+        ],
+        "UC_σs": [
+          0.68079
+        ],
+        "w_fnl": [
+          2.861,
+          "mm"
+        ],
+        "UC_max": [
+          0.68079
         ]
       }
     },

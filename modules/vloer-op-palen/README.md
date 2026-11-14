@@ -25,7 +25,7 @@ vloeien en de herverdeling daardoor zitten niet in de krachtsverdeling. Het blad
 dat op het scherm en op papier.
 
 **Controle fysisch niet-lineair (GL+FNL).** Kies bij **Krachtsverdeling in het
-rekenmodel** de controle fysisch niet-lineair, dan rekent Open FEM Studio (2026.46.2 of
+rekenmodel** de controle fysisch niet-lineair, dan rekent Open FEM Studio (2026.46.3 of
 nieuwer) dezelfde vloer ook met `compute_plate_analysis`: geometrisch lineair, fysisch
 niet-lineair, met beton volgens NEN-EN 1992-1-1 3.1.5, B500B en trekverstijving per
 richting (7.4.3, β = 1,0). De netten en de bijleg boven de palen zijn de wapeningslagen.
@@ -33,6 +33,15 @@ De bijleg ligt in beide richtingen over de kolomstrook, een half veld breed. Het
 heeft dezelfde palen (veer k, de paalkop als vierkant steunvlak met dezelfde oppervlakte),
 dezelfde vier belastinggevallen en dezelfde maas als het lineaire model. Er zijn vijf
 combinaties: drie UGT en karakteristiek en frequent bij volle belasting.
+
+Ponskoppen en stroken zijn zones met hun eigen dikte en eigen gewicht (FEM Studio rekent
+het eigen gewicht per zone). Het blad legt een raster over de randen van koppen en
+stroken rond elke paal en geeft elk vak de dikte in zijn midden. Alleen de vakken die
+dikker zijn dan de vloer worden een zone, zodat zones nooit overlappen. Een zone rekent
+als dikkere plaat in hetzelfde middenvlak: de excentriciteit door de vlakke bovenkant is
+verwaarloosd, en de netten liggen op hun dekking tot de onder- en bovenkant van de zone.
+Loopt het ondernet in werkelijkheid recht door, dan is de nuttige hoogte voor trek onder
+in de zone overschat. De bijleg onder in de stroken ligt langs de strook.
 
 Uit het antwoord volgen:
 
@@ -49,12 +58,14 @@ FEM Studio stopt bij het eerste punt dat het vloeicriterium (Johansen) haalt, zo
 plastische herverdeling. Naast een paal is dat een lokale piek die met een fijnere maas
 hoger uitvalt. De benutting is daarom een veilige ondergrens van het draagvermogen bij
 deze maas, geen oordeel dat los van de maas geldt. "Haalt de volle last niet" betekent
-dat de eerste doorsnede haar grens bereikt, niet dat de vloer bezwijkt.
+dat de eerste doorsnede haar grens bereikt, niet dat de vloer bezwijkt. De getoonde
+benutting is het grootste over de integratiepunten; aan de rand van een element naast
+het steunvlak kan hij al hoger zijn. Het blad noemt ook de plek van de grootste benutting
+en van de grootste staalspanning boven.
 
-Een vloer met ponskop of stroken rekent FNL nog niet: die plaat heeft één dikte. Het blad
-meldt dat, en de lineaire toetsen gelden dan gewoon. De varianten `fnl` en `fnl-ponskop`
-in de testgegevens bewaken dit. De standaardinvoer haalt in FNL λ = 0,988 (UC 1,01),
-tegen 0,98 met het drielagenmodel op de lineaire momenten.
+De varianten `fnl`, `fnl-ponskop` en `fnl-alles` (ponskop en stroken in x en y) in de
+testgegevens bewaken dit. De standaardinvoer haalt in FNL λ = 0,988 (UC 1,01), tegen 0,98
+met het drielagenmodel op de lineaire momenten.
 
 **Wat lineair-elastisch betekent.** De wapening op de elastische momenten is een
 evenwichtsstelsel en daarmee een veilige verdeling, maar de pieken boven de palen zijn
