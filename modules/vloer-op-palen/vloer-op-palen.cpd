@@ -247,7 +247,7 @@ w_pt(p) = if(K_pt(p) ≡ 1; " ponskop"; if(SS_pt(p) ≡ 1; " strook"; ""))
 '<b>Rekenmodel.</b> De krachtsverdeling komt uit een <b>lineair-elastische</b> plaatberekening door Open FEM Studio (<code>solve_open_fem_3d</code>): vierhoekige schaalelementen (MITC4, Mindlin-Reissner), maas 'round(a_m/mm)' mm, ongescheurde stijfheid met E<sub>cm</sub> en ν = 'ν'. Geometrisch en fysisch lineair: scheurvorming en de herverdeling daardoor zitten er niet in. Een paal is een lineaire veer k, verdeeld over de paalkop (ook op trek); ponskoppen en stroken zijn platen met hun eigen dikte in hetzelfde middenvlak; de vloerrand is vrij.
 'Belastinggevallen: eigen gewicht, afwerking en twee schaakborden. De combinaties zijn sommen daarvan: UGT (6.10a, opslag ψ<sub>0</sub> = 1,0) bij volle belasting en per schaakbord, frequent (ψ<sub>1</sub> = 'ψ_1') voor de scheurwijdte en karakteristiek voor de doorbuiging.
 'De wapening volgt per punt uit m<sub>x</sub>, m<sub>y</sub> en m<sub>xy</sub> met het drielagenmodel (<code>solve_native_fem</code>, <code>threeLayer</code>: de momenten als krachten in twee buitenlagen, per laag NEN-EN 1992-1-1 bijlage F); de scheurwijdte volgens 7.3.4 (<code>crackWidth</code>) met de staalspanning uit hetzelfde model onder de frequente combinatie (nationale bijlage bij 7.3.1(5)).
-'<details class="alleen-scherm" style="margin:2px 0 8px"><summary style="cursor:pointer; color:#64748b; font-size:0.9em">Toelichting: de controle fysisch niet-lineair (FNL)</summary><i>Fysisch niet-lineair (FNL): kies je dat hierboven, dan rekent Open FEM Studio dezelfde vloer ook met <code>compute_plate_analysis</code> (geometrisch lineair, fysisch niet-lineair): beton volgens NEN-EN 1992-1-1 3.1.5, B500B, trekverstijving per richting volgens 7.4.3 (β = 1,0: kortdurende belasting), de netten en de bijleg boven de palen als wapeningslagen en de last in stappen. Elke combinatie rekent vanaf de onbelaste vloer. Zo blijkt of de gekozen wapening het draagvermogen haalt, met de staalspanning en de doorbuiging van de gescheurde vloer: zie Controle fysisch niet-lineair. De wapening per zone en per punt blijft op de lineaire krachtsverdeling, want de niet-lineaire berekening geeft de uiterste waarden en geen verdeling over de vloer. Ponskoppen en stroken zijn zones met hun eigen dikte en hun eigen gewicht, in hetzelfde middenvlak: de excentriciteit door de vlakke bovenkant is verwaarloosd, en de netten liggen op hun dekking tot de onder- en bovenkant van de zone.</i></details><span class="alleen-scherm"></span>
+'<details class="alleen-scherm" style="margin:2px 0 8px"><summary style="cursor:pointer; color:#64748b; font-size:0.9em">Toelichting: de controle fysisch niet-lineair (FNL)</summary><i>Fysisch niet-lineair (FNL): kies je dat hierboven, dan rekent Open FEM Studio dezelfde vloer ook met <code>compute_plate_analysis</code> (geometrisch lineair, fysisch niet-lineair): beton volgens NEN-EN 1992-1-1 3.1.5, B500B, trekverstijving per richting volgens 7.4.3 (β = 0,5 bij langdurende en 1,0 bij kortdurende belasting, dezelfde keuze als voor de scheurwijdte), de netten en de bijleg boven de palen als wapeningslagen en de last in stappen. Elke combinatie rekent vanaf de onbelaste vloer. Zo blijkt of de gekozen wapening het draagvermogen haalt, met de staalspanning en de doorbuiging van de gescheurde vloer: zie Controle fysisch niet-lineair. De wapening per zone en per punt blijft op de lineaire krachtsverdeling, want de niet-lineaire berekening geeft de uiterste waarden en geen verdeling over de vloer. Ponskoppen en stroken zijn zones met hun eigen dikte en hun eigen gewicht, in hetzelfde middenvlak: de excentriciteit door de vlakke bovenkant is verwaarloosd, en de netten liggen op hun dekking tot de onder- en bovenkant van de zone.</i></details><span class="alleen-scherm"></span>
 '<details class="alleen-scherm" style="margin:2px 0 8px"><summary style="cursor:pointer; color:#64748b; font-size:0.9em">Toelichting: wat lineair-elastisch betekent</summary><i>Wat lineair-elastisch betekent voor de uitkomst: de wapening op de elastische momenten is een evenwichtsstelsel en daarmee een veilige verdeling, maar de pieken boven de palen zijn hoger en de veldmomenten lager dan in een gescheurde vloer; de doorbuiging is die van de ongescheurde plaat zonder kruip, een ondergrens. Het drielagenmodel is een deeltoets: dwarskracht en pons (module Pons), verankering en detaillering horen er niet bij.</i></details><span class="alleen-scherm"></span>
 #pre
 'Het model in Open FEM Studio. Momenten in kNm/m, positief is trek onder.
@@ -487,7 +487,7 @@ s_bs = 150 mm
 #show
 #end if
 w_lim = ?{0.3}*(mm)', toelaatbare scheurwijdte w<sub>max</sub><span class="kolom-4"></span>'
-@select duur "Belastingsduur voor de scheurwijdte"
+@select duur "Belastingsduur (scheurwijdte en FNL)"
   langdurend (k_t = 0,4) = 0
   kortdurend (k_t = 0,6) = 1
 @end
@@ -1268,8 +1268,9 @@ n_z = n_z + 1
   mesh_bottom_mm[3] = ø_o
   mesh_bottom_mm[4] = s_o
   max_cell_size_mm = a_m
-  // trekverstijving kortdurend (EC2 7.19): de toets 7.2(5) geldt voor de karakteristieke combinatie
-  tension_stiffening_beta = 1
+  // trekverstijving (EC2 7.19) volgens de belastingsduur, dezelfde keuze als voor de scheurwijdte:
+  // langdurend 0,5, kortdurend 1,0
+  tension_stiffening_beta = if(duur ≡ 1; 1; 0.5)
   // de palen: een veer per paal met de paalkop als steunvlak; de bijleg boven elke paal in x en in y
   #for j = 0 : n_r
   #for i = 0 : n_r

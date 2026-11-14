@@ -28,7 +28,8 @@ dat op het scherm en op papier.
 rekenmodel** de controle fysisch niet-lineair, dan rekent Open FEM Studio (2026.46.3 of
 nieuwer) dezelfde vloer ook met `compute_plate_analysis`: geometrisch lineair, fysisch
 niet-lineair, met beton volgens NEN-EN 1992-1-1 3.1.5, B500B en trekverstijving per
-richting (7.4.3, β = 1,0). De netten en de bijleg boven de palen zijn de wapeningslagen.
+richting (7.4.3, β = 0,5 bij langdurende en 1,0 bij kortdurende belasting: dezelfde keuze
+als voor de scheurwijdte). De netten en de bijleg boven de palen zijn de wapeningslagen.
 De bijleg ligt in beide richtingen over de kolomstrook, een half veld breed. Het model
 heeft dezelfde palen (veer k, de paalkop als vierkant steunvlak met dezelfde oppervlakte),
 dezelfde vier belastinggevallen en dezelfde maas als het lineaire model. Er zijn vijf
@@ -64,8 +65,9 @@ het steunvlak kan hij al hoger zijn. Het blad noemt ook de plek van de grootste 
 en van de grootste staalspanning boven.
 
 De varianten `fnl`, `fnl-ponskop` en `fnl-alles` (ponskop en stroken in x en y) in de
-testgegevens bewaken dit. De standaardinvoer haalt in FNL λ = 0,988 (UC 1,01), tegen 0,98
-met het drielagenmodel op de lineaire momenten.
+testgegevens bewaken dit. Met de standaardinvoer (langdurend, β = 0,5) haalt de vlakke plaat in FNL λ = 0,95 (UC
+1,05), tegen 0,98 met het drielagenmodel op de lineaire momenten; met β = 1,0 is dat
+λ = 0,988. Met ponskop λ = 0,99, met ponskop en stroken een benutting van 0,67.
 
 **Wat lineair-elastisch betekent.** De wapening op de elastische momenten is een
 evenwichtsstelsel en daarmee een veilige verdeling, maar de pieken boven de palen zijn
