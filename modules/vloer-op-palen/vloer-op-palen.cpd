@@ -1256,6 +1256,10 @@ UC_fnl = max(u_f(1); u_f(2); u_f(3))', draagvermogen (UGT): de grootste benuttin
 σ_s,kar', grootste staalspanning, karakteristiek<span class="kolom-2"></span>'
 UC_σs = σ_s,kar/(0.8*500 N/mm^2)', EC2 7.2(5): σ<sub>s</sub> ≤ 0,8·f<sub>yk</sub><span class="kolom-2"></span>'
 w_fnl', grootste doorbuiging, karakteristiek, gescheurd (zonder kruip); lineair 'round(w_BGT/mm; 1)' mm<span class="kolom-2"></span>'
+#if min(take(1; λ_V); take(2; λ_V); take(3; λ_V)) ≥ 1
+R_fnl = fnl.reaction_max_kn*kN', grootste paalreactie (UGT), gescheurd; lineair R<sub>paal</sub> = 'round(R_paal/kN)' kN<span class="kolom-2"></span>'
+'<i>De gescheurde vloer verdeelt de last anders over de palen. Neem voor de pons de grootste van R<sub>fnl</sub> en de lineaire reactie van die paal.</i>
+#end if
 '<i>De benutting is die van het vloeicriterium per element (Johansen): 1 is de rand van het draagvermogen van de doorsnede. Een combinatie die bezwijkt, haalt de volle last niet; dan is de benutting 1/λ. FEM Studio stopt bij het eerste punt dat het criterium haalt, zonder plastische herverdeling. Naast de paal is dat een lokale piek die met een fijnere maas hoger uitvalt: de benutting is een veilige ondergrens van het draagvermogen bij deze maas (die van het lineaire model), geen oordeel dat los van de maas geldt. Bezwijken naast de paal betekent hier dat de eerste doorsnede haar grens bereikt, niet dat de vloer bezwijkt. De staalspanning frequent (vol) is ter vergelijking met de scheurwijdte hierboven, die met het drielagenmodel op de lineaire momenten rekent. Niet in deze berekening: pons, dwarskracht en de scheurwijdte zelf.</i>
 #else
 '<b style="color:#b91c1c">Nog niet gerekend.</b> De niet-lineaire berekening volgt uit Open FEM Studio en staat hier zodra het antwoord er is.
