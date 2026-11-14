@@ -911,28 +911,52 @@
     },
     {
       "naam": "fnl",
-      "omschrijving": "fysisch niet-lineair gekozen: FEM Studio rekent een plaat alleen lineair, dus niets is gerekend en nergens staat een uitkomst, ook niet met de antwoorden van de lineaire berekening",
-      "antwoordenVan": "vlak",
+      "omschrijving": "vlakke plaat met de controle fysisch niet-lineair (GL+FNL): dezelfde lineaire uitkomsten, en het draagvermogen en de staalspanning uit compute_plate_analysis",
       "invoer": {
         "krachtsverdeling": "1"
       },
-      "nietGerekend": [
-        "gerekend",
-        "o_1",
-        "b_7",
-        "R_binnen",
-        "w_BGT",
-        "UC_o",
-        "UC_b",
-        "UC_pt",
-        "UC_bt",
-        "UC_w",
-        "UC_max",
-        "ctl_3",
-        "ctl_w"
-      ],
-      "melding": "alleen lineair",
-      "verwacht": {}
+      "verwacht": {
+        "UC_fnl": [
+          1.0124
+        ],
+        "UC_σs": [
+          0.7696
+        ],
+        "w_fnl": [
+          2.9979,
+          "mm"
+        ],
+        "UC_pt": [
+          0.97935
+        ],
+        "R_binnen": [
+          568.4,
+          "kN"
+        ],
+        "UC_max": [
+          1.0124
+        ]
+      }
+    },
+    {
+      "naam": "fnl-ponskop",
+      "omschrijving": "controle fysisch niet-lineair met een ponskop: die kan FNL nog niet, de lineaire toetsen gelden wel",
+      "invoer": {
+        "krachtsverdeling": "1",
+        "ponskop": "1"
+      },
+      "antwoordenVan": "ponskop",
+      "verwacht": {
+        "ger_fnl": [
+          0
+        ],
+        "UC_fnl": [
+          0
+        ],
+        "UC_max": [
+          0.91636
+        ]
+      }
     },
     {
       "naam": "krimp-verhinderd",

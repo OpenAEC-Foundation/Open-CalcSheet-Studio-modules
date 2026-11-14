@@ -24,23 +24,37 @@ E_cm·t³/12 per plaat en ν = 0,2. Geometrisch lineair en fysisch lineair: sche
 vloeien en de herverdeling daardoor zitten niet in de krachtsverdeling. Het blad zegt
 dat op het scherm en op papier.
 
-**Fysisch niet-lineair (FNL), geometrisch lineair (GL)** is de bedoeling voor deze
-vloer, maar Open FEM Studio rekent een plaat met gescheurd beton en wapening nog niet.
-Nagegaan op de geïnstalleerde server 2026.44.2 en in de bron van 2026.46.0:
+**Controle fysisch niet-lineair (GL+FNL).** Kies bij **Krachtsverdeling in het
+rekenmodel** de controle fysisch niet-lineair, dan rekent Open FEM Studio (2026.46.2 of
+nieuwer) dezelfde vloer ook met `compute_plate_analysis`: geometrisch lineair, fysisch
+niet-lineair, met beton volgens NEN-EN 1992-1-1 3.1.5, B500B en trekverstijving per
+richting (7.4.3, β = 1,0). De netten en de bijleg boven de palen zijn de wapeningslagen.
+De bijleg ligt in beide richtingen over de kolomstrook, een half veld breed. Het model
+heeft dezelfde palen (veer k, de paalkop als vierkant steunvlak met dezelfde oppervlakte),
+dezelfde vier belastinggevallen en dezelfde maas als het lineaire model. Er zijn vijf
+combinaties: drie UGT en karakteristiek en frequent bij volle belasting.
 
-- `solve_open_fem_3d` kent voor `analysis` alleen `linear` en `p-delta` en rekent een
-  model met platen alleen lineair; tweede orde met platen weigert het;
-- `solve_native_fem` met `hybridPlate` kent een stijfheid die per element afneemt met de
-  rek, maar dat is een opgegeven E(ε)-curve, isotroop en zonder wapening: geen scheurwet;
-- `hybridPlateLayered` rekent alleen elastische lagen, en de kern met vezellagen
-  (`hybridPlateFiber`) rekent staal met vloeien en weigert beton met een scheurwet.
+Uit het antwoord volgen:
 
-De keuze staat wel in het blad (**Krachtsverdeling in het rekenmodel**: lineair-elastisch
-of fysisch niet-lineair). FNL zet `analyse fysisch-niet-lineair` in het `@fem`-blok; dat
-blok weigert die analyse, dus er wordt niets gerekend en nergens staat een uitkomst,
-nooit een lineaire uitkomst onder een andere naam. Zodra FEM Studio en het `@fem`-blok de
-analyse kennen, rekent het blad met dezelfde invoer niet-lineair. De variant `fnl` in de
-testgegevens bewaakt dit.
+- **draagvermogen**: de grootste benutting over de UGT-combinaties, of 1/λ als een
+  combinatie de volle last niet haalt;
+- **staalspanning** onder de karakteristieke combinatie, getoetst aan 0,8·f_yk (7.2(5));
+- **doorbuiging** van de gescheurde vloer, karakteristiek en zonder kruip, naast die van
+  het lineaire model.
+
+De wapening per zone en per punt blijft op de lineaire krachtsverdeling. De
+niet-lineaire berekening geeft de uiterste waarden, geen verdeling over de vloer.
+
+FEM Studio stopt bij het eerste punt dat het vloeicriterium (Johansen) haalt, zonder
+plastische herverdeling. Naast een paal is dat een lokale piek die met een fijnere maas
+hoger uitvalt. De benutting is daarom een veilige ondergrens van het draagvermogen bij
+deze maas, geen oordeel dat los van de maas geldt. "Haalt de volle last niet" betekent
+dat de eerste doorsnede haar grens bereikt, niet dat de vloer bezwijkt.
+
+Een vloer met ponskop of stroken rekent FNL nog niet: die plaat heeft één dikte. Het blad
+meldt dat, en de lineaire toetsen gelden dan gewoon. De varianten `fnl` en `fnl-ponskop`
+in de testgegevens bewaken dit. De standaardinvoer haalt in FNL λ = 0,988 (UC 1,01),
+tegen 0,98 met het drielagenmodel op de lineaire momenten.
 
 **Wat lineair-elastisch betekent.** De wapening op de elastische momenten is een
 evenwichtsstelsel en daarmee een veilige verdeling, maar de pieken boven de palen zijn

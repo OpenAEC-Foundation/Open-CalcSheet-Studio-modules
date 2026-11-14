@@ -223,28 +223,21 @@ w_pt(p) = if(K_pt(p) ≡ 1; " ponskop"; if(SS_pt(p) ≡ 1; " strook"; ""))
 
 @select krachtsverdeling "Krachtsverdeling in het rekenmodel"
   lineair-elastisch = 0
-  fysisch niet-lineair (FNL), geometrisch lineair = 1
+  lineair, met een controle fysisch niet-lineair (GL+FNL) = 1
 @end
-#if krachtsverdeling ≡ 1
-'<b style="color:#b91c1c">Fysisch niet-lineair is gekozen, maar Open FEM Studio rekent een plaat nu alleen lineair-elastisch.</b> Er wordt daarom niets gerekend. Kies lineair-elastisch, of wacht op een versie van FEM Studio die een plaat met gescheurd beton en wapening rekent: dan rekent dit blad met dezelfde invoer niet-lineair.
-#end if
 '<b>Rekenmodel.</b> De krachtsverdeling komt uit een <b>lineair-elastische</b> plaatberekening door Open FEM Studio (<code>solve_open_fem_3d</code>): vierhoekige schaalelementen (MITC4, Mindlin-Reissner), maas 'round(a_m/mm)' mm, ongescheurde stijfheid met E<sub>cm</sub> en ν = 'ν'. Geometrisch en fysisch lineair: scheurvorming en de herverdeling daardoor zitten er niet in. Een paal is een lineaire veer k, verdeeld over de paalkop (ook op trek); ponskoppen en stroken zijn platen met hun eigen dikte in hetzelfde middenvlak; de vloerrand is vrij.
 'Belastinggevallen: eigen gewicht, afwerking en twee schaakborden. De combinaties zijn sommen daarvan: UGT (6.10a, opslag ψ<sub>0</sub> = 1,0) bij volle belasting en per schaakbord, frequent (ψ<sub>1</sub> = 'ψ_1') voor de scheurwijdte en karakteristiek voor de doorbuiging.
 'De wapening volgt per punt uit m<sub>x</sub>, m<sub>y</sub> en m<sub>xy</sub> met het drielagenmodel (<code>solve_native_fem</code>, <code>threeLayer</code>: de momenten als krachten in twee buitenlagen, per laag NEN-EN 1992-1-1 bijlage F); de scheurwijdte volgens 7.3.4 (<code>crackWidth</code>) met de staalspanning uit hetzelfde model onder de frequente combinatie (nationale bijlage bij 7.3.1(5)).
-'<i>Fysisch niet-lineair (FNL) en geometrisch lineair (GL) is de bedoeling voor deze vloer, maar Open FEM Studio rekent een plaat met gescheurd beton en wapening nog niet. <code>solve_open_fem_3d</code> rekent een model met platen alleen lineair. De plaatkernen van <code>solve_native_fem</code> kennen wel een stijfheid die per element afneemt met de rek, maar dat is een opgegeven E(ε)-curve en geen scheurwet met wapeningslagen; de kern met vezellagen rekent alleen staal en weigert beton. De keuze hierboven staat klaar: FNL geeft nu "niet gerekend", nooit een lineaire uitkomst onder een andere naam.</i>
+'<i>Fysisch niet-lineair (FNL): kies je dat hierboven, dan rekent Open FEM Studio dezelfde vloer ook met <code>compute_plate_analysis</code> (geometrisch lineair, fysisch niet-lineair): beton volgens NEN-EN 1992-1-1 3.1.5, B500B, trekverstijving per richting volgens 7.4.3 (β = 1,0: kortdurende belasting), de netten en de bijleg boven de palen als wapeningslagen en de last in stappen. Elke combinatie rekent vanaf de onbelaste vloer. Zo blijkt of de gekozen wapening het draagvermogen haalt, met de staalspanning en de doorbuiging van de gescheurde vloer: zie Controle fysisch niet-lineair. De wapening per zone en per punt blijft op de lineaire krachtsverdeling, want de niet-lineaire berekening geeft de uiterste waarden en geen verdeling over de vloer. Een vloer met ponskop of stroken rekent FNL nog niet: die plaat heeft één dikte.</i>
 '<i>Wat lineair-elastisch betekent voor de uitkomst: de wapening op de elastische momenten is een evenwichtsstelsel en daarmee een veilige verdeling, maar de pieken boven de palen zijn hoger en de veldmomenten lager dan in een gescheurde vloer; de doorbuiging is die van de ongescheurde plaat zonder kruip, een ondergrens. Het drielagenmodel is een deeltoets: dwarskracht en pons (module Pons), verankering en detaillering horen er niet bij.</i>
 #pre
 'Het model in Open FEM Studio. Momenten in kNm/m, positief is trek onder.
 @fem vloer
   materiaal E_cm; ν
   maas a_m
-  // de keuze van de krachtsverdeling: FEM Studio rekent een plaat nu alleen lineair,
-  // en een andere analyse laat het blok als niet gerekend staan
-  #if krachtsverdeling ≡ 1
-  analyse fysisch-niet-lineair
-  #else
+  // de krachtsverdeling voor de wapening: altijd lineair; de controle fysisch
+  // niet-lineair staat verderop (compute_plate_analysis)
   analyse lineair
-  #end if
   plaat 0; 0; B_x; B_y; h
   // de stroken over de paalrijen, binnen de vloer gehouden
   #if st_x
@@ -1144,6 +1137,131 @@ w_BGT', grootste doorbuiging, karakteristiek (ongescheurd en zonder kruip: een o
 '<b style="color:#b91c1c">Nog niet gerekend.</b> De paalreacties volgen uit Open FEM Studio.
 #end if
 
+# Controle fysisch niet-lineair (GL+FNL)
+
+#hide
+'Standaard niet gerekend: zo bestaan deze namen ook als de controle niet gekozen is.
+ger_fnl = 0
+fnl_aan = bool(krachtsverdeling ≡ 1)*bool(kop + st_x + st_y ≡ 0)
+UC_fnl = 0
+UC_σs = 0
+#show
+#if krachtsverdeling ≡ 0
+'Niet gekozen: de krachtsverdeling is lineair-elastisch (zie het rekenmodel). Kies daar de controle fysisch niet-lineair om het draagvermogen van de gescheurde vloer met de gekozen wapening aan te tonen.
+#else if fnl_aan ≡ 0
+'<b style="color:#b91c1c">Niet gerekend.</b> De niet-lineaire plaat van Open FEM Studio (<code>compute_plate_analysis</code>) heeft één dikte; een vloer met ponskop of stroken kan daar nog niet in. De toetsen op de lineaire krachtsverdeling hierboven gelden wel.
+#else
+#hide
+'De betonklasse als tekst, en de paalkop als vierkant met dezelfde oppervlakte.
+n_bk = if(betonklasse ≡ 25; "C25/30"; if(betonklasse ≡ 28; "C28/35"; if(betonklasse ≡ 35; "C35/45"; "C30/37")))
+b_pk = sqrt(π)/2*d_kop
+'De bijleg boven: in beide richtingen over de kolomstrook boven elke paal, een half veld breed, binnen de vloer.
+x_z0(i) = max(a_r + i*L_x - L_x/4; 0 m)
+x_z1(i) = min(a_r + i*L_x + L_x/4; B_x)
+y_z0(j) = max(a_r + j*L_y - L_y/4; 0 m)
+y_z1(j) = min(a_r + j*L_y + L_y/4; B_y)
+'Een veld (i, j) van het schaakbord; de rand hoort bij het randveld, zoals in het lineaire model.
+x_v0(i) = if(i ≡ 0; 0 m; a_r + i*L_x)
+x_v1(i) = if(i ≡ n_r - 1; B_x; a_r + (i + 1)*L_x)
+y_v0(j) = if(j ≡ 0; 0 m; a_r + j*L_y)
+y_v1(j) = if(j ≡ n_r - 1; B_y; a_r + (j + 1)*L_y)
+#show
+'Dezelfde vloer, dezelfde palen en dezelfde belastinggevallen als het lineaire model, nu met gescheurd beton en de wapening als lagen: net boven 'n_s2', net onder 'n_s0' en de bijleg Ø'ø_bb/mm'-'s_bb/mm' in beide richtingen over de kolomstrook boven elke paal. De paalkop is een steunvlak van 'round(b_pk/mm)' × 'round(b_pk/mm)' mm (dezelfde oppervlakte), de veer k = 'k_paal'. Vijf combinaties: de drie UGT-combinaties, en de karakteristieke en de frequente bij volle belasting.
+#pre
+@kern fnl = compute_plate_analysis
+  variant = "GL+FNL"
+  width_mm = B_x
+  length_mm = B_y
+  thickness_mm = h
+  concrete_class = n_bk
+  steel_class = "B500B"
+  cover_top_mm = c_nom
+  cover_bottom_mm = c_nom
+  // de netten: buitenste laag Ø en h.o.h., binnenste laag Ø en h.o.h.; de x-staven buiten
+  mesh_top_mm[1] = ø_b
+  mesh_top_mm[2] = s_b
+  mesh_top_mm[3] = ø_b
+  mesh_top_mm[4] = s_b
+  mesh_bottom_mm[1] = ø_o
+  mesh_bottom_mm[2] = s_o
+  mesh_bottom_mm[3] = ø_o
+  mesh_bottom_mm[4] = s_o
+  max_cell_size_mm = a_m
+  // trekverstijving kortdurend (EC2 7.19): de toets 7.2(5) geldt voor de karakteristieke combinatie
+  tension_stiffening_beta = 1
+  // de palen: een veer per paal met de paalkop als steunvlak; de bijleg boven elke paal in x en in y
+  #for j = 0 : n_r
+  #for i = 0 : n_r
+  point_supports_mm[j*(n_r + 1) + i + 1] = [a_r + i*L_x; a_r + j*L_y]
+  point_support_k_kn_per_m[j*(n_r + 1) + i + 1] = k_paal
+  extra_bars_mm[2*(j*(n_r + 1) + i) + 1] = [x_z0(i); y_z0(j); x_z1(i) - x_z0(i); y_z1(j) - y_z0(j); ø_bb; s_bb]
+  extra_bars_face[2*(j*(n_r + 1) + i) + 1] = 1
+  extra_bars_angle_deg[2*(j*(n_r + 1) + i) + 1] = 0
+  extra_bars_mm[2*(j*(n_r + 1) + i) + 2] = [x_z0(i); y_z0(j); x_z1(i) - x_z0(i); y_z1(j) - y_z0(j); ø_bb; s_bb]
+  extra_bars_face[2*(j*(n_r + 1) + i) + 2] = 1
+  extra_bars_angle_deg[2*(j*(n_r + 1) + i) + 2] = 90
+  #loop
+  #loop
+  point_support_size_mm[1] = [b_pk; b_pk]
+  // de gevallen: 1 eigen gewicht, 2 afwerking (1 kN/m²), 3 en 4 de schaakborden (1 kN/m² per veld)
+  uniform_load_kn_per_m2[1] = 25*h/(1 m)
+  uniform_load_kn_per_m2[2] = 1
+  uniform_load_kn_per_m2[3] = 0
+  uniform_load_kn_per_m2[4] = 0
+  #for j = 0 : n_r - 1
+  #for i = 0 : n_r - 1
+  patch_loads_mm[j*n_r + i + 1] = [x_v0(i); y_v0(j); x_v1(i) - x_v0(i); y_v1(j) - y_v0(j)]
+  patch_load_kn_per_m2[j*n_r + i + 1] = 1
+  patch_load_case[j*n_r + i + 1] = 3 + mod(i + j; 2)
+  #loop
+  #loop
+  // de combinaties, factoren op de vier gevallen: UGT vol en per schaakbord, karakteristiek en frequent vol
+  combinations[1] = [γ_Gd; γ_Gd*f_afw; γ_Q*f_q; γ_Q*f_q]
+  combinations[2] = [γ_Gd; γ_Gd*f_afw; γ_Q*f_q; 0]
+  combinations[3] = [γ_Gd; γ_Gd*f_afw; 0; γ_Q*f_q]
+  combinations[4] = [1; f_afw; f_q; f_q]
+  combinations[5] = [1; f_afw; ψ_1*f_q; ψ_1*f_q]
+@end
+#hide
+'Is er gerekend? Zonder antwoord bestaat fnl.element_count niet en is ger_fnl geen 1.
+ger_fnl = bool(fnl.element_count > 0)
+#show
+#if ger_fnl ≡ 1
+#hide
+'Per combinatie: de laatst bereikte lastfactor (1 is geconvergeerd), de benutting van de doorsnede (vloeicriterium),
+'de grootste staalspanning boven en onder, de doorbuiging en het gescheurde deel van de vloer (NaN bij bezwijken).
+λ_V = fnl.combinations.completed_load_factor
+u_V = fnl.combinations.capacity_utilisation_max
+sb_V = fnl.combinations.sigma_s_top_max_mpa
+so_V = fnl.combinations.sigma_s_bottom_max_mpa
+w_V = fnl.combinations.w_max_mm
+cr_V = fnl.combinations.cracked_fraction
+'UGT: de benutting, of bij bezwijken 1/λ, met λ de laatst bereikte lastfactor.
+u_f(c) = if(take(c; λ_V) ≥ 1; take(c; u_V); 1/take(c; λ_V))
+'Karakteristiek (combinatie 4): EC2 7.2(5), de staalspanning hooguit 0,8·f_yk.
+σ_s,kar = max(take(4; sb_V); take(4; so_V))*N/mm^2
+w_fnl = take(4; w_V)*mm
+#show
+'<table style="border-collapse:collapse; font-size:0.9em;">
+'<tr style="border-bottom:1.5px solid #374151;"><th style="text-align:left; padding:1px 6px;">Combinatie</th><th style="text-align:right; padding:1px 6px;">λ</th><th style="text-align:right; padding:1px 6px;">benutting</th><th style="text-align:right; padding:1px 6px;">σ<sub>s</sub> boven</th><th style="text-align:right; padding:1px 6px;">σ<sub>s</sub> onder</th><th style="text-align:right; padding:1px 6px;">w</th><th style="text-align:right; padding:1px 6px;">gescheurd</th></tr>
+#for c = 1 : 5
+#if take(c; λ_V) ≥ 1
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:1px 6px;">'take(c; ["UGT vol"; "UGT schaakbord 1"; "UGT schaakbord 2"; "karakteristiek vol"; "frequent vol"])'</td><td style="text-align:right; padding:1px 6px;">1,00</td><td style="text-align:right; padding:1px 6px;">'round(take(c; u_V); 2)'</td><td style="text-align:right; padding:1px 6px;">'round(take(c; sb_V))' N/mm²</td><td style="text-align:right; padding:1px 6px;">'round(take(c; so_V))' N/mm²</td><td style="text-align:right; padding:1px 6px;">'round(take(c; w_V); 1)' mm</td><td style="text-align:right; padding:1px 6px;">'round(100*take(c; cr_V))' %</td></tr>
+#else
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:1px 6px;">'take(c; ["UGT vol"; "UGT schaakbord 1"; "UGT schaakbord 2"; "karakteristiek vol"; "frequent vol"])'</td><td style="text-align:right; padding:1px 6px; color:#b91c1c; font-weight:700;">'round(take(c; λ_V); 2)'</td><td colspan="5" style="padding:1px 6px; color:#b91c1c;">haalt de volle last niet: een doorsnede bereikt eerder haar grens</td></tr>
+#end if
+#loop
+'</table>
+UC_fnl = max(u_f(1); u_f(2); u_f(3))', draagvermogen (UGT): de grootste benutting, of 1/λ als een combinatie bezwijkt<span class="kolom-2"></span>'
+σ_s,kar', grootste staalspanning, karakteristiek<span class="kolom-2"></span>'
+UC_σs = σ_s,kar/(0.8*500 N/mm^2)', EC2 7.2(5): σ<sub>s</sub> ≤ 0,8·f<sub>yk</sub><span class="kolom-2"></span>'
+w_fnl', grootste doorbuiging, karakteristiek, gescheurd (zonder kruip); lineair 'round(w_BGT/mm; 1)' mm<span class="kolom-2"></span>'
+'<i>De benutting is die van het vloeicriterium per element (Johansen): 1 is de rand van het draagvermogen van de doorsnede. Een combinatie die bezwijkt, haalt de volle last niet; dan is de benutting 1/λ. FEM Studio stopt bij het eerste punt dat het criterium haalt, zonder plastische herverdeling. Naast de paal is dat een lokale piek die met een fijnere maas hoger uitvalt: de benutting is een veilige ondergrens van het draagvermogen bij deze maas (die van het lineaire model), geen oordeel dat los van de maas geldt. Bezwijken naast de paal betekent hier dat de eerste doorsnede haar grens bereikt, niet dat de vloer bezwijkt. De staalspanning frequent (vol) is ter vergelijking met de scheurwijdte hierboven, die met het drielagenmodel op de lineaire momenten rekent. Niet in deze berekening: pons, dwarskracht en de scheurwijdte zelf.</i>
+#else
+'<b style="color:#b91c1c">Nog niet gerekend.</b> De niet-lineaire berekening volgt uit Open FEM Studio en staat hier zodra het antwoord er is.
+#end if
+#end if
+
 # Krimp
 
 L_vloer = ?{40}*(m)', lengte van de vloer zonder voeg<span class="kolom-3"></span>'
@@ -1223,7 +1341,7 @@ UC_Amin = if(krimp_verh ≡ 2; A_s,min/(A_o + A_b); 0)
 
 #hide
 'Alles gerekend? Dan pas een maatgevende UC en een oordeel.
-alles = bool(gerekend*ger_3*ger_w ≡ 1)
+alles = bool(gerekend*ger_3*ger_w*if(fnl_aan ≡ 1; ger_fnl; 1) ≡ 1)
 #show
 '<table style="width:100%; border-collapse:collapse; font-size:0.95em;">
 '<tr style="border-bottom:2px solid #374151;"><th style="text-align:left; padding:2px 8px;">Toets</th><th style="text-align:right; padding:2px 8px;">UC</th><th style="text-align:left; padding:2px 8px;"></th></tr>
@@ -1240,6 +1358,16 @@ alles = bool(gerekend*ger_3*ger_w ≡ 1)
 #else
 '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Momenten per zone</td><td style="text-align:right; padding:2px 8px;">–</td><td style="padding:2px 8px; color:#b91c1c; font-weight:700;">nog niet gerekend</td></tr>
 #end if
+#if fnl_aan ≡ 1
+#if ger_fnl ≡ 1
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Draagvermogen, fysisch niet-lineair (GL+FNL)</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_fnl)'">'round(UC_fnl; 2)'</td><td style="padding:2px 8px; color:'kleur(UC_fnl)'">'oordeel(UC_fnl)'</td></tr>
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Staalspanning karakteristiek, GL+FNL (7.2(5))</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_σs)'">'round(UC_σs; 2)'</td><td style="padding:2px 8px; color:'kleur(UC_σs)'">'oordeel(UC_σs)'</td></tr>
+#else
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Fysisch niet-lineair (GL+FNL)</td><td style="text-align:right; padding:2px 8px;">–</td><td style="padding:2px 8px; color:#b91c1c; font-weight:700;">nog niet gerekend</td></tr>
+#end if
+#else if krachtsverdeling ≡ 1
+'<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Fysisch niet-lineair (GL+FNL)</td><td style="text-align:right; padding:2px 8px;">–</td><td style="padding:2px 8px;">niet mogelijk met ponskop of stroken</td></tr>
+#end if
 #if krimp_verh ≡ 2
     '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Minimumwapening krimp (7.1)</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_Amin)'">'round(UC_Amin; 2)'</td><td style="padding:2px 8px; color:'kleur(UC_Amin)'">'oordeel(UC_Amin)'</td></tr>
     '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:2px 8px;">Scheurwijdte door krimp</td><td style="text-align:right; padding:2px 8px; font-weight:700; color:'kleur(UC_krimp)'">'round(UC_krimp; 2)'</td><td style="padding:2px 8px; color:'kleur(UC_krimp)'">'oordeel(UC_krimp)'</td></tr>
@@ -1249,7 +1377,7 @@ alles = bool(gerekend*ger_3*ger_w ≡ 1)
 '</table>
 #if alles ≡ 1
 #hide
-UC_max = max(UC_pt; UC_bt; UC_w; UC_o; UC_b; UC_pk; UC_Amin; UC_krimp)
+UC_max = max(UC_pt; UC_bt; UC_w; UC_o; UC_b; UC_pk; UC_Amin; UC_krimp; UC_fnl; UC_σs)
 #show
 UC_max', de grootste van de toetsen hierboven'
 #if UC_max ≤ 1
@@ -1260,4 +1388,4 @@ UC_max', de grootste van de toetsen hierboven'
 #else
 '<span class="oordeel" style="color: red"><b>Eindoordeel: niet getoetst</b></span>: de berekening door Open FEM Studio ontbreekt of is niet af.
 #end if
-'Pons boven de paal: met de module Pons. De krachtsverdeling is lineair-elastisch (zie het rekenmodel). Buiten dit blad: puntlasten (wielen, stellingpoten), vermoeiing, temperatuur, de paal zelf en de voegen.
+'Pons boven de paal: met de module Pons. De wapening volgt uit de lineaire krachtsverdeling; met de controle fysisch niet-lineair ook het draagvermogen van de gescheurde vloer (zie het rekenmodel). Buiten dit blad: puntlasten (wielen, stellingpoten), vermoeiing, temperatuur, de paal zelf en de voegen.
